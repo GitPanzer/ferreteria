@@ -1,0 +1,1687 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <title>Ferretería El Constructor · Panel Admin</title>
+  <!-- Google Fonts (Roboto) & Font Awesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- PhotoSwipe para zoom de imágenes -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.4.2/photoswipe.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.4.2/photoswipe.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --orange: #FF6B35;
+      --dark-gray: #2C3E50;
+      --light-bg: #f8f9fa;
+      --shadow: 0 10px 20px rgba(0,0,0,0.05), 0 6px 6px rgba(0,0,0,0.05);
+      --transition: all 0.25s ease;
+    }
+    body { background: #f1f5f9; }
+    .app-wrapper { max-width: 1600px; margin: 0 auto; background: white; box-shadow: var(--shadow); }
+    .stock-low { background: #fee2e2; color: #dc2626; font-weight: 700; padding: 0.25rem 0.75rem; border-radius: 20px; }
+    .badge-urgent { background: #ef4444; color: white; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.8rem; border-radius: 40px; }
+    .admin-sidebar { background: var(--dark-gray); min-height: 100vh; color: white; }
+    .admin-sidebar a { color: #e2e8f0; display: flex; align-items: center; gap: 12px; padding: 1rem 1.5rem; transition: 0.2s; }
+    .admin-sidebar a:hover { background: #ff6b3530; color: white; }
+    .admin-sidebar a.active { background: var(--orange); color: white; border-left: 4px solid white; }
+    .product-thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 12px; }
+    .image-gallery { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; margin: 1rem 0; }
+    .gallery-item { border: 2px solid transparent; border-radius: 12px; cursor: pointer; overflow: hidden; }
+    .gallery-item.selected { border-color: var(--orange); transform: scale(1.02); }
+    
+    /* Dark Mode MEJORADO */
+    .dark-mode { 
+      background: #0a0f1c; 
+      color: #ffffff; 
+    }
+    .dark-mode .app-wrapper { 
+      background: #0f172a; 
+    }
+    .dark-mode .bg-white { 
+      background: #1e293b !important; 
+      color: #ffffff !important; 
+    }
+    .dark-mode .text-gray-900,
+    .dark-mode .text-gray-800,
+    .dark-mode .text-gray-700 { 
+      color: #f1f5f9 !important; 
+    }
+    .dark-mode .text-gray-600,
+    .dark-mode .text-gray-500 { 
+      color: #cbd5e1 !important; 
+    }
+    .dark-mode .border,
+    .dark-mode .border-gray-200,
+    .dark-mode .border-gray-300 { 
+      border-color: #334155 !important; 
+    }
+    .dark-mode .bg-gray-50,
+    .dark-mode .bg-gray-100 { 
+      background: #1e293b !important; 
+    }
+    .dark-mode .text-[#2C3E50] { 
+      color: #ffffff !important; 
+    }
+    .dark-mode .bg-gradient-to-r { 
+      opacity: 0.9; 
+    }
+    .dark-mode .hover\:bg-gray-100:hover { 
+      background: #2d3748 !important; 
+    }
+    .dark-mode .product-card, 
+    .dark-mode .bg-white.rounded-2xl,
+    .dark-mode .bg-white.rounded-xl,
+    .dark-mode .bg-white.rounded-3xl { 
+      background: #1e293b !important; 
+      color: #ffffff !important;
+      border: 1px solid #334155 !important;
+    }
+    .dark-mode .add-to-cart { 
+      background: #2d3748 !important; 
+      color: #ffffff !important; 
+      border-bottom-color: #1a202c; 
+    }
+    .dark-mode .add-to-cart:hover { 
+      background: #4a5568 !important; 
+    }
+    .dark-mode .admin-sidebar { 
+      background: #0a0f1c !important; 
+    }
+    .dark-mode .admin-sidebar a { 
+      color: #e2e8f0 !important; 
+    }
+    .dark-mode .admin-sidebar a:hover { 
+      background: #ff6b3540 !important; 
+    }
+    .dark-mode .admin-sidebar a.active { 
+      background: var(--orange) !important; 
+      color: white !important; 
+    }
+    .dark-mode .toast { 
+      background: #1e293b !important; 
+      color: #ffffff !important; 
+      border: 1px solid #334155; 
+    }
+    .dark-mode input,
+    .dark-mode select,
+    .dark-mode textarea { 
+      background: #0f172a !important; 
+      color: #ffffff !important; 
+      border-color: #475569 !important; 
+    }
+    .dark-mode input::placeholder { 
+      color: #94a3b8 !important; 
+    }
+    .dark-mode .bg-blue-50,
+    .dark-mode .bg-green-50,
+    .dark-mode .bg-yellow-50,
+    .dark-mode .bg-purple-50 { 
+      background: #1e293b !important; 
+    }
+    .dark-mode .text-blue-600,
+    .dark-mode .text-green-600,
+    .dark-mode .text-yellow-600,
+    .dark-mode .text-purple-600 { 
+      color: #ffffff !important; 
+    }
+    .dark-mode .stock-low { 
+      background: #991b1b !important; 
+      color: white !important; 
+    }
+    .dark-mode .badge-urgent { 
+      background: #dc2626 !important; 
+      color: white !important; 
+    }
+    .dark-mode #predictiveResults {
+      background: #1e293b !important;
+      border: 1px solid #334155;
+    }
+    .dark-mode #predictiveResults div:hover {
+      background: #2d3748 !important;
+    }
+    .dark-mode .footer {
+      background: #0f172a !important;
+      border-top: 1px solid #334155 !important;
+    }
+    
+    .toast { position: fixed; bottom: 20px; right: 20px; background: var(--dark-gray); color: white; padding: 1rem 2rem; border-radius: 60px; z-index: 9999; animation: slideIn 0.3s; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    .offline-banner { background: #92400e; color: white; text-align: center; padding: 0.5rem; position: sticky; top: 0; z-index: 100; }
+    .fade-in { animation: fadeIn 0.5s; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    
+    /* Galería de imágenes múltiples */
+    .multi-image-gallery {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+    .multi-image-item {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: 0.5rem;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .multi-image-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .multi-image-item .remove-image {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: rgba(239, 68, 68, 0.9);
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .add-more-images {
+      border: 2px dashed #cbd5e1;
+      border-radius: 0.5rem;
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .add-more-images:hover {
+      border-color: var(--orange);
+      background: #ff6b3510;
+    }
+    
+    /* Footer */
+    .footer {
+      background: #f8f9fa;
+      border-top: 1px solid #e9ecef;
+      padding: 2rem 1.5rem;
+      margin-top: 2rem;
+    }
+    .footer a {
+      transition: var(--transition);
+    }
+    .footer a:hover {
+      color: var(--orange) !important;
+    }
+    
+    /* Imagen clickeable */
+    .clickable-image {
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .clickable-image:hover {
+      transform: scale(1.02);
+    }
+  </style>
+</head>
+<body>
+<div class="app-wrapper" id="appWrapper">
+
+  <!-- BANNER OFFLINE -->
+  <div id="offlineBanner" class="offline-banner hidden">
+    <i class="fas fa-wifi-slash"></i> Modo offline - algunos datos pueden no estar actualizados
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50"></div>
+
+  <!-- HEADER -->
+  <header class="bg-white sticky top-0 z-40 border-b border-gray-200 px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <div class="text-2xl font-black text-[#2C3E50]"><i class="fas fa-tools text-[#FF6B35] mr-2"></i>El Constructor</div>
+      <div class="relative hidden md:block">
+        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+        <input type="text" id="globalSearch" placeholder="Buscar productos..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-full w-80 focus:outline-none focus:border-[#FF6B35]">
+        <div id="predictiveResults" class="absolute top-full left-0 right-0 bg-white shadow-lg rounded-xl mt-1 max-h-80 overflow-y-auto hidden"></div>
+      </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <button id="darkModeToggle" class="p-2 rounded-full hover:bg-gray-100"><i class="fas fa-moon"></i></button>
+      <div class="cart-icon relative cursor-pointer" id="cartToggle">
+        <i class="fas fa-shopping-cart text-2xl text-[#2C3E50]"></i>
+        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full" id="cartCounter">0</span>
+      </div>
+      <button class="border border-[#2C3E50] px-5 py-2 rounded-full font-semibold hover:bg-[#2C3E50] hover:text-white transition" id="adminLockBtn">
+        <i class="fas fa-lock mr-2"></i>Admin
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <div class="flex min-h-screen">
+    <!-- SIDEBAR ADMIN (hidden por defecto) -->
+    <div id="adminSidebar" class="admin-sidebar hidden">
+      <div class="p-6 border-b border-gray-600">
+        <i class="fas fa-user-shield text-3xl mr-2"></i>
+        <span class="font-bold text-xl">Panel Admin</span>
+      </div>
+      <nav class="mt-6">
+        <a href="#" data-section="resumen" class="active"><i class="fas fa-chart-pie w-6"></i> Resumen</a>
+        <a href="#" data-section="productos"><i class="fas fa-boxes w-6"></i> Gestión Productos</a>
+        <a href="#" data-section="pedidos"><i class="fas fa-clipboard-list w-6"></i> Pedidos del día</a>
+        <a href="#" data-section="metricas"><i class="fas fa-chart-line w-6"></i> Métricas</a>
+        <a href="#" id="logoutAdmin"><i class="fas fa-sign-out-alt w-6"></i> Cerrar sesión</a>
+      </nav>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL (CLIENTE o ADMIN) -->
+    <main id="mainContent" class="flex-1 p-6">
+      <!-- CLIENTE VIEW (default) -->
+      <div id="clienteView">
+        <!-- CATEGORÍAS -->
+        <div class="mb-8">
+          <h2 class="text-2xl font-bold text-[#2C3E50] mb-4"><i class="fas fa-th-large text-[#FF6B35] mr-2"></i>Categorías</h2>
+          <div class="flex gap-3 overflow-x-auto pb-2" id="categoryGrid"></div>
+        </div>
+
+        <!-- FILTROS AVANZADOS -->
+        <div class="bg-gray-50 p-4 rounded-xl mb-6 flex flex-wrap gap-4 items-center">
+          <select id="categoryFilter" class="border rounded-lg px-4 py-2">
+            <option value="">Todas las categorías</option>
+          </select>
+          <input type="number" id="minPrice" placeholder="Precio mínimo" class="border rounded-lg px-4 py-2 w-32">
+          <input type="number" id="maxPrice" placeholder="Precio máximo" class="border rounded-lg px-4 py-2 w-32">
+          <button id="applyFilters" class="bg-[#FF6B35] text-white px-6 py-2 rounded-lg font-semibold">Filtrar</button>
+        </div>
+
+        <!-- BANNER OFERTAS -->
+        <div id="ofertasBanner" class="bg-gradient-to-r from-orange-400 to-red-500 text-white p-6 rounded-3xl mb-8 flex items-center justify-between">
+          <div>
+            <h3 class="text-2xl font-black">🔥 Ofertas del día</h3>
+            <p>Hasta 30% off en herramientas seleccionadas</p>
+          </div>
+          <i class="fas fa-tags text-5xl opacity-50"></i>
+        </div>
+
+        <!-- PRODUCTOS DESTACADOS -->
+        <h2 class="text-2xl font-bold text-[#2C3E50] mb-4"><i class="fas fa-star text-[#FF6B35] mr-2"></i>Más vendidos</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8" id="destacadosGrid"></div>
+
+        <!-- TODOS LOS PRODUCTOS -->
+        <h2 class="text-2xl font-bold text-[#2C3E50] mb-4"><i class="fas fa-box text-[#FF6B35] mr-2"></i>Todos los productos</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4" id="productGrid"></div>
+      </div>
+
+      <!-- ADMIN VIEW (hidden) -->
+      <div id="adminView" class="hidden">
+        <div id="adminContent"></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL DETALLE PRODUCTO (sin stock) -->
+  <div id="productDetailModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[90] hidden">
+    <div class="bg-white rounded-3xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-2xl font-bold" id="detailModalTitle"></h3>
+        <i class="fas fa-times text-2xl cursor-pointer" id="closeDetailModal"></i>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Carrusel de imágenes con zoom -->
+        <div>
+          <div id="mainImageContainer" class="h-64 bg-cover bg-center rounded-xl mb-2 clickable-image" style="background-image: url('')" onclick="openZoomModal(currentImages, currentImageIndex)"></div>
+          <div id="thumbnailGallery" class="flex gap-2 overflow-x-auto"></div>
+          <p class="text-xs text-gray-500 mt-2 text-center">Hacé clic en la imagen para ver en pantalla completa con zoom</p>
+        </div>
+        <!-- Detalles (sin stock) -->
+        <div>
+          <p class="text-gray-600 mb-2" id="detailCategory"></p>
+          <p class="text-3xl font-black text-[#FF6B35] mb-4" id="detailPrice"></p>
+          <p class="text-gray-700 mb-4" id="detailDescription"></p>
+          <button class="w-full bg-[#2C3E50] text-white py-3 rounded-xl font-bold hover:bg-[#FF6B35] transition" id="addFromDetailBtn">
+            <i class="fas fa-cart-plus mr-2"></i>Agregar al carrito
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL ZOOM DE IMAGEN -->
+  <div id="zoomModal" class="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-[100] hidden">
+    <div class="relative w-full h-full flex items-center justify-center">
+      <button class="absolute top-5 right-5 text-white text-3xl z-10 hover:text-[#FF6B35]" onclick="closeZoomModal()">
+        <i class="fas fa-times"></i>
+      </button>
+      <button class="absolute left-5 text-white text-4xl z-10 hover:text-[#FF6B35]" onclick="prevZoomImage()">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <img id="zoomImage" class="max-h-[90vh] max-w-[90vw] object-contain" src="" alt="Zoom">
+      <button class="absolute right-5 text-white text-4xl z-10 hover:text-[#FF6B35]" onclick="nextZoomImage()">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+      <div class="absolute bottom-5 text-white text-sm bg-black bg-opacity-50 px-4 py-2 rounded-full">
+        <span id="zoomCounter">1/1</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CHECKOUT MEJORADO -->
+  <div id="checkoutModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[90] hidden">
+    <div class="bg-white rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-2xl font-bold">Finalizar compra</h3>
+        <i class="fas fa-times text-2xl cursor-pointer" id="closeCheckoutModal"></i>
+      </div>
+      
+      <!-- Resumen del carrito -->
+      <div class="bg-gray-50 p-4 rounded-xl mb-4 max-h-40 overflow-y-auto">
+        <div id="checkoutCartSummary"></div>
+      </div>
+
+      <!-- Opciones de entrega -->
+      <div class="mb-6">
+        <h4 class="font-bold mb-3">Método de entrega</h4>
+        <div class="space-y-3">
+          <label class="flex items-center p-3 border rounded-xl cursor-pointer hover:border-[#FF6B35]">
+            <input type="radio" name="deliveryMethod" value="retiro" class="mr-3" checked>
+            <div>
+              <span class="font-bold">Retiro en local</span>
+              <p class="text-sm text-gray-500">Av. Siempre Viva 123</p>
+              <a href="https://maps.google.com/?q=Av.+Siempre+Viva+123" target="_blank" class="text-[#FF6B35] text-sm">
+                <i class="fas fa-map-marker-alt mr-1"></i>Ver en Google Maps
+              </a>
+            </div>
+          </label>
+          
+          <label class="flex items-center p-3 border rounded-xl cursor-pointer hover:border-[#FF6B35]">
+            <input type="radio" name="deliveryMethod" value="domicilio" class="mr-3">
+            <div>
+              <span class="font-bold">Envío a domicilio</span>
+              <p class="text-sm text-gray-500">Coordinar con el ferretero</p>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Fecha y hora (para retiro) -->
+      <div id="retiroFields" class="mb-6">
+        <h4 class="font-bold mb-3">Fecha y hora de retiro</h4>
+        <input type="date" id="pickupDate" class="w-full border rounded-xl px-4 py-3 mb-3" min="">
+        <select id="pickupTime" class="w-full border rounded-xl px-4 py-3">
+          <option>9:00 - 12:00</option>
+          <option>12:00 - 15:00</option>
+          <option>15:00 - 18:00</option>
+          <option>18:00 - 20:00</option>
+        </select>
+      </div>
+
+      <!-- Datos de contacto - SOLO NOMBRE -->
+      <div class="mb-6">
+        <h4 class="font-bold mb-3">Datos de contacto</h4>
+        <input type="text" id="checkoutName" placeholder="Nombre completo *" class="w-full border rounded-xl px-4 py-3">
+        <p class="text-xs text-gray-500 mt-1">El ferretero se comunicará para coordinar la entrega</p>
+      </div>
+
+      <button id="confirmCheckoutBtn" class="w-full bg-[#FF6B35] text-white py-3 rounded-xl font-bold text-lg">
+        Confirmar pedido
+      </button>
+    </div>
+  </div>
+
+  <!-- CARRITO SIDEBAR -->
+  <div id="cartOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50"></div>
+  <div id="cartSidebar" class="fixed top-0 right-0 w-full max-w-md bg-white h-full shadow-2xl z-50 transform translate-x-full transition-transform duration-300">
+    <div class="p-6 h-full flex flex-col">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">🛒 Tu carrito</h2>
+        <i class="fas fa-times text-2xl cursor-pointer" id="closeCart"></i>
+      </div>
+      <div id="cartItems" class="flex-1 overflow-y-auto"></div>
+      <div class="border-t pt-4 mt-4">
+        <div class="flex justify-between text-xl font-bold mb-4">
+          <span>Total:</span>
+          <span id="cartTotal">$0</span>
+        </div>
+        <button id="checkoutBtn" class="w-full bg-[#FF6B35] text-white py-3 rounded-xl font-bold text-lg disabled:opacity-50" disabled>Finalizar compra</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL LOGIN ADMIN -->
+  <div id="adminLoginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] hidden">
+    <div class="bg-white rounded-3xl p-8 max-w-md w-full">
+      <i class="fas fa-user-shield text-4xl text-[#FF6B35] block text-center mb-4"></i>
+      <h3 class="text-2xl font-bold text-center mb-6">Acceso Administrador</h3>
+      <input type="text" id="adminUser" placeholder="Usuario" value="admin" class="w-full border rounded-full px-4 py-3 mb-3">
+      <input type="password" id="adminPass" placeholder="Contraseña" class="w-full border rounded-full px-4 py-3 mb-6">
+      <button id="loginAdminBtn" class="w-full bg-[#2C3E50] text-white py-3 rounded-full font-bold">Ingresar</button>
+      <button id="closeAdminLogin" class="w-full text-gray-500 py-2 mt-2">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- MODAL AGREGAR/EDITAR PRODUCTO (SOLO SUBIR ARCHIVOS) -->
+  <div id="productModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70] hidden">
+    <div class="bg-white rounded-3xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-6" id="modalTitle">Agregar Producto</h3>
+      <form id="productForm">
+        <input type="hidden" id="productId">
+        <div class="mb-4">
+          <label class="block font-medium mb-2">Nombre del producto</label>
+          <input type="text" id="productName" required class="w-full border rounded-xl px-4 py-3">
+        </div>
+        <div class="mb-4">
+          <label class="block font-medium mb-2">Descripción</label>
+          <textarea id="productDescription" rows="3" class="w-full border rounded-xl px-4 py-3"></textarea>
+        </div>
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block font-medium mb-2">Categoría</label>
+            <select id="productCategory" class="w-full border rounded-xl px-4 py-3"></select>
+          </div>
+          <div>
+            <label class="block font-medium mb-2">Precio</label>
+            <input type="number" id="productPrice" required class="w-full border rounded-xl px-4 py-3">
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block font-medium mb-2">Stock inicial</label>
+          <input type="number" id="productStock" required class="w-full border rounded-xl px-4 py-3">
+        </div>
+        
+        <!-- MÚLTIPLES IMÁGENES - SOLO SUBIR ARCHIVOS -->
+        <div class="mb-4">
+          <label class="block font-medium mb-2">Imágenes del producto</label>
+          <div id="multiImageContainer" class="multi-image-gallery"></div>
+          
+          <div class="mt-3">
+            <input type="file" id="multiImageUpload" accept="image/*" multiple class="w-full border rounded-xl p-2">
+            <p class="text-xs text-gray-500 mt-1">Puedes seleccionar múltiples imágenes</p>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <button type="submit" class="flex-1 bg-[#FF6B35] text-white py-3 rounded-xl font-bold">Guardar</button>
+          <button type="button" id="closeProductModal" class="flex-1 border py-3 rounded-xl">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL CALCULADORA -->
+  <div id="calcModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70] hidden">
+    <div class="bg-white rounded-3xl p-8 max-w-md w-full">
+      <h3 class="text-2xl font-bold mb-4">🧮 Calculadora de materiales</h3>
+      <p class="mb-4 text-gray-600">Calculá cuántas bolsas de cemento necesitas</p>
+      <input type="number" id="metrosCuadrados" placeholder="Metros cuadrados (m²)" class="w-full border rounded-xl px-4 py-3 mb-4">
+      <select id="tipoMaterial" class="w-full border rounded-xl px-4 py-3 mb-4">
+        <option value="7">Cemento (7kg/m²)</option>
+        <option value="10">Cemento albañilería (10kg/m²)</option>
+      </select>
+      <div id="calcResult" class="text-xl font-bold text-center mb-4"></div>
+      <button id="closeCalc" class="w-full bg-[#2C3E50] text-white py-3 rounded-xl">Cerrar</button>
+    </div>
+  </div>
+
+  <!-- MODAL ÉXITO PEDIDO -->
+  <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[80] hidden">
+    <div class="bg-white rounded-3xl p-8 max-w-md w-full text-center">
+      <i class="fas fa-circle-check text-6xl text-green-500 mb-4"></i>
+      <h2 class="text-3xl font-black mb-2">¡Pedido confirmado!</h2>
+      <p class="text-sm text-gray-600 mb-2">Guardá este código para retirar o coordinar el envío</p>
+      <div class="text-5xl font-black bg-gray-100 py-4 rounded-2xl my-4" id="orderCode">4X2F</div>
+      <div id="orderSummary" class="text-left bg-gray-50 p-4 rounded-xl mb-4"></div>
+      <button id="whatsappShare" class="w-full bg-[#25D366] text-white py-3 rounded-xl font-bold mb-2"><i class="fab fa-whatsapp mr-2"></i>Compartir por WhatsApp</button>
+      <button id="closeSuccessModal" class="w-full bg-[#2C3E50] text-white py-3 rounded-xl font-bold">Seguir comprando</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER (SÓCALO) -->
+<footer class="footer">
+  <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
+    <!-- Contacto -->
+    <div>
+      <h4 class="font-bold text-lg mb-4">Contacto</h4>
+      <ul class="space-y-2">
+        <li>
+          <a href="mailto:ferretero@elconstructor.com" class="text-gray-600 hover:text-[#FF6B35] flex items-center gap-2">
+            <i class="fas fa-envelope"></i>
+            ferretero@elconstructor.com
+          </a>
+        </li>
+        <li>
+          <a href="https://wa.me/5491159602127" target="_blank" class="text-gray-600 hover:text-[#FF6B35] flex items-center gap-2">
+            <i class="fab fa-whatsapp"></i>
+            +54 9 11 5960-2127
+          </a>
+        </li>
+        <li>
+          <a href="https://maps.google.com/?q=Av.+Siempre+Viva+123" target="_blank" class="text-gray-600 hover:text-[#FF6B35] flex items-center gap-2">
+            <i class="fas fa-map-marker-alt"></i>
+            Av. Siempre Viva 123
+          </a>
+        </li>
+      </ul>
+    </div>
+    
+    <!-- Horarios -->
+    <div>
+      <h4 class="font-bold text-lg mb-4">Horarios</h4>
+      <ul class="space-y-2 text-gray-600">
+        <li>Lunes a Viernes: 8:00 - 18:00</li>
+        <li>Sábados: 8:00 - 13:00</li>
+        <li>Domingos: Cerrado</li>
+      </ul>
+    </div>
+    
+    <!-- Enlaces rápidos -->
+    <div>
+      <h4 class="font-bold text-lg mb-4">Enlaces</h4>
+      <ul class="space-y-2">
+        <li><a href="#" class="text-gray-600 hover:text-[#FF6B35]">Términos y condiciones</a></li>
+        <li><a href="#" class="text-gray-600 hover:text-[#FF6B35]">Política de privacidad</a></li>
+        <li><a href="#" class="text-gray-600 hover:text-[#FF6B35]">Preguntas frecuentes</a></li>
+      </ul>
+    </div>
+    
+    <!-- Diseñado por -->
+    <div>
+      <h4 class="font-bold text-lg mb-4">Diseñado por</h4>
+      <a href="mailto:gitpanzer@gmail.com?subject=Contacto%20por%20diseño%20web&body=Hola%2C%20me%20contacto%20desde%20la%20ferretería%20para%20consultar%20sobre%20el%20diseño..." 
+         class="inline-flex items-center gap-2 bg-[#FF6B35] text-white px-4 py-2 rounded-full hover:bg-[#2C3E50] transition">
+        <i class="fas fa-code"></i>
+        gitpanzer
+      </a>
+      <p class="text-sm text-gray-500 mt-2">© 2024 Todos los derechos reservados</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ==================== CONFIGURACIÓN SUPABASE (GLOBAL) ====================
+const supabaseUrl = 'https://whesdugggeckszdrjjge.supabase.co';
+const supabaseKey = 'sb_publishable_hbfg_QcYZviUFvUnGCpv6A_6pVmuMES';
+const { createClient } = supabase;
+const supabaseClient = createClient(supabaseUrl, supabaseKey);
+
+console.log('✅ Supabase inicializado');
+
+// ==================== VARIABLES GLOBALES PARA ZOOM ====================
+let currentImages = [];
+let currentImageIndex = 0;
+
+// ==================== FUNCIONES DE ZOOM ====================
+function openZoomModal(images, index) {
+    currentImages = images;
+    currentImageIndex = index;
+    updateZoomImage();
+    document.getElementById('zoomModal').classList.remove('hidden');
+}
+
+function closeZoomModal() {
+    document.getElementById('zoomModal').classList.add('hidden');
+}
+
+function updateZoomImage() {
+    const zoomImage = document.getElementById('zoomImage');
+    const zoomCounter = document.getElementById('zoomCounter');
+    
+    if (currentImages && currentImages.length > 0) {
+        zoomImage.src = currentImages[currentImageIndex];
+        zoomCounter.innerText = `${currentImageIndex + 1}/${currentImages.length}`;
+    }
+}
+
+function nextZoomImage() {
+    if (currentImages && currentImages.length > 0) {
+        currentImageIndex = (currentImageIndex + 1) % currentImages.length;
+        updateZoomImage();
+    }
+}
+
+function prevZoomImage() {
+    if (currentImages && currentImages.length > 0) {
+        currentImageIndex = (currentImageIndex - 1 + currentImages.length) % currentImages.length;
+        updateZoomImage();
+    }
+}
+
+// ==================== FUNCIÓN DE VERIFICACIÓN ====================
+async function verificarConexion() {
+    console.log('%c🔍 VERIFICANDO CONEXIÓN CON SUPABASE...', 'color: blue; font-weight: bold');
+    
+    try {
+        console.log('📡 Cliente Supabase:', supabaseClient ? '✅ Inicializado' : '❌ No inicializado');
+        console.log('🌐 Verificando conexión...');
+        
+        const { data, error } = await supabaseClient
+            .from('productos')
+            .select('count', { count: 'exact', head: true });
+        
+        if (error) {
+            console.error('%c❌ ERROR DE CONEXIÓN:', 'color: red', error);
+            return false;
+        }
+        
+        console.log('%c✅ CONEXIÓN EXITOSA!', 'color: green; font-weight: bold');
+        return true;
+        
+    } catch (error) {
+        console.error('%c❌ ERROR INESPERADO:', 'color: red', error);
+        return false;
+    }
+}
+
+// Ejecutar verificación
+verificarConexion();
+
+// ==================== FUNCIÓN PRINCIPAL ====================
+(function() {
+    const supabase = supabaseClient;
+
+    // ==================== CONSTANTES ====================
+    const CATEGORIES = [
+        'Herramientas Eléctricas', 'Herramientas Manuales', 'Pinturas y Accesorios', 
+        'Electricidad', 'Plomería', 'Construcción', 'Jardinería', 'Seguridad Industrial'
+    ];
+
+    const INITIAL_PRODUCTS = [
+        { id: 1, name: 'Taladro Percutor 800W', description: 'Taladro percutor profesional con velocidad variable. Incluye maletín y accesorios.', price: 28500, category: 'Herramientas Eléctricas', stock: 4, images: ['https://images.unsplash.com/photo-1504148455328-c376907d081c?w=200&h=150&fit=crop'], sales: 45 },
+        { id: 2, name: 'Martillo de uña 20oz', description: 'Martillo de uña con mango ergonómico. Ideal para carpintería y construcción.', price: 5300, category: 'Herramientas Manuales', stock: 12, images: ['https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=200&h=150&fit=crop'], sales: 38 },
+        { id: 3, name: 'Pintura Látex Blanco 10L', description: 'Pintura al látex para interiores y exteriores. Fácil aplicación y lavable.', price: 18900, category: 'Pinturas y Accesorios', stock: 6, images: ['https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=200&h=150&fit=crop'], sales: 27 },
+        { id: 4, name: 'Cable eléctrico #12 (100m)', description: 'Cable eléctrico de cobre para instalaciones residenciales.', price: 12400, category: 'Electricidad', stock: 3, images: ['https://images.unsplash.com/photo-1557404763-69708cd6b6ce?w=200&h=150&fit=crop'], sales: 31 },
+        { id: 5, name: 'Llave inglesa 12"', description: 'Llave ajustable de acero al carbono con acabado cromado.', price: 8900, category: 'Herramientas Manuales', stock: 9, images: ['https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=200&h=150&fit=crop'], sales: 42 },
+        { id: 6, name: 'Caño PVC 110mm x 3m', description: 'Caño de PVC para desagües y ventilaciones. Resistente y duradero.', price: 6700, category: 'Plomería', stock: 8, images: ['https://images.unsplash.com/photo-1575157915773-2b01a23958b3?w=200&h=150&fit=crop'], sales: 19 },
+        { id: 7, name: 'Cortadora de césped', description: 'Cortadora de césped eléctrica con bolsa recolectora.', price: 78900, category: 'Jardinería', stock: 2, images: ['https://images.unsplash.com/photo-1581094288338-2314fc1b3c1a?w=200&h=150&fit=crop'], sales: 12 },
+        { id: 8, name: 'Casco de seguridad', description: 'Casco de seguridad con visor ajustable. Cumple normas internacionales.', price: 4500, category: 'Seguridad Industrial', stock: 15, images: ['https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=200&h=150&fit=crop'], sales: 33 },
+        { id: 9, name: 'Juego de destornilladores', description: 'Juego de 6 destornilladores con puntas magnéticas.', price: 9800, category: 'Herramientas Manuales', stock: 5, images: ['https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200&h=150&fit=crop'], sales: 51 },
+        { id: 10, name: 'Amoladora angular 4½"', description: 'Amoladora angular potente para corte y desbaste de metales.', price: 22400, category: 'Herramientas Eléctricas', stock: 7, images: ['https://images.unsplash.com/photo-1617802690992-15d93263d3a9?w=200&h=150&fit=crop'], sales: 29 }
+    ];
+
+    // ==================== ESTADO GLOBAL ====================
+    let products = JSON.parse(localStorage.getItem('ferreteria_productos')) || INITIAL_PRODUCTS;
+    let pedidos = JSON.parse(localStorage.getItem('ferreteria_pedidos')) || [];
+    let cart = JSON.parse(localStorage.getItem('ferreteria_carrito')) || [];
+    let adminSession = localStorage.getItem('ferreteria_admin_session') === 'true';
+    let darkMode = localStorage.getItem('darkMode') === 'true';
+    let currentProductId = null;
+    let activeAdminSection = 'resumen';
+
+    // Elementos DOM
+    const clienteView = document.getElementById('clienteView');
+    const adminView = document.getElementById('adminView');
+    const adminSidebar = document.getElementById('adminSidebar');
+    const adminContent = document.getElementById('adminContent');
+    const productGrid = document.getElementById('productGrid');
+    const categoryGrid = document.getElementById('categoryGrid');
+    const cartCounter = document.getElementById('cartCounter');
+    const cartSidebar = document.getElementById('cartSidebar');
+    const cartItems = document.getElementById('cartItems');
+    const cartTotal = document.getElementById('cartTotal');
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    const globalSearch = document.getElementById('globalSearch');
+    const predictiveResults = document.getElementById('predictiveResults');
+    const destacadosGrid = document.getElementById('destacadosGrid');
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const appWrapper = document.getElementById('appWrapper');
+    const productDetailModal = document.getElementById('productDetailModal');
+    const checkoutModal = document.getElementById('checkoutModal');
+
+    // ==================== FUNCIONES SUPABASE ====================
+
+    async function subirMultiplesImagenes(files) {
+        const urls = [];
+        for (const file of files) {
+            try {
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+                const filePath = `productos/${fileName}`;
+
+                const { error: uploadError } = await supabase.storage
+                    .from('productos')
+                    .upload(filePath, file, {
+                        cacheControl: '3600',
+                        upsert: false
+                    });
+
+                if (uploadError) throw uploadError;
+
+                const { data: { publicUrl } } = supabase.storage
+                    .from('productos')
+                    .getPublicUrl(filePath);
+
+                urls.push(publicUrl);
+            } catch (error) {
+                console.error('Error subiendo imagen:', error);
+            }
+        }
+        return urls;
+    }
+
+    async function cargarProductosDB() {
+        try {
+            const { data, error } = await supabase
+                .from('productos')
+                .select('*')
+                .order('id', { ascending: false });
+
+            if (error) throw error;
+            
+            if (data && data.length > 0) {
+                products = data;
+                localStorage.setItem('ferreteria_productos', JSON.stringify(products));
+            }
+            
+            renderProducts();
+            renderDestacados();
+            if (adminSession) renderAdminSection(activeAdminSection);
+        } catch (error) {
+            console.error('Error cargando productos:', error);
+            showToast('Usando datos locales', 'error');
+            renderProducts();
+            renderDestacados();
+        }
+    }
+
+    async function guardarProductoDB(productData, files = []) {
+        try {
+            let images = productData.images || [];
+            
+            if (files.length > 0) {
+                const uploadedUrls = await subirMultiplesImagenes(files);
+                images = [...images, ...uploadedUrls];
+            }
+            
+            const productoParaGuardar = {
+                name: productData.name,
+                description: productData.description || '',
+                price: productData.price,
+                category: productData.category,
+                stock: productData.stock,
+                images: images,
+                image: images[0] || '',
+                sales: productData.sales || 0
+            };
+            
+            if (productData.id) {
+                const { error } = await supabase
+                    .from('productos')
+                    .update(productoParaGuardar)
+                    .eq('id', productData.id);
+                
+                if (error) throw error;
+            } else {
+                const { error } = await supabase
+                    .from('productos')
+                    .insert([productoParaGuardar]);
+                
+                if (error) throw error;
+            }
+            
+            await cargarProductosDB();
+            showToast(productData.id ? 'Producto actualizado' : 'Producto agregado');
+            return true;
+        } catch (error) {
+            console.error('Error guardando producto:', error);
+            showToast('Error al guardar', 'error');
+            return false;
+        }
+    }
+
+    // ==================== FUNCIONES UTILIDAD ====================
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type === 'error' ? 'bg-red-500' : 'bg-[#2C3E50]'}`;
+        toast.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'} mr-2"></i>${message}`;
+        document.getElementById('toastContainer').appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    function saveToLocalStorage() {
+        localStorage.setItem('ferreteria_productos', JSON.stringify(products));
+        localStorage.setItem('ferreteria_pedidos', JSON.stringify(pedidos));
+        localStorage.setItem('ferreteria_carrito', JSON.stringify(cart));
+    }
+
+    // ==================== RENDER FUNCTIONS ====================
+    function renderCategories() {
+        let html = '<button class="cat-btn px-6 py-2 rounded-full font-semibold bg-[#FF6B35] text-white" data-cat="todos">Todos</button>';
+        CATEGORIES.forEach(cat => {
+            html += `<button class="cat-btn px-6 py-2 rounded-full font-semibold border border-gray-300 hover:border-[#FF6B35]" data-cat="${cat}">${cat}</button>`;
+        });
+        categoryGrid.innerHTML = html;
+        document.querySelectorAll('.cat-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('bg-[#FF6B35]', 'text-white'));
+                btn.classList.add('bg-[#FF6B35]', 'text-white');
+                filterProducts();
+            });
+        });
+    }
+
+    function filterProducts() {
+        const cat = document.querySelector('.cat-btn.bg-\\[\\#FF6B35\\]')?.dataset.cat || 'todos';
+        const min = document.getElementById('minPrice')?.value || 0;
+        const max = document.getElementById('maxPrice')?.value || Infinity;
+        
+        let filtered = products.filter(p => {
+            const matchCat = cat === 'todos' || p.category === cat;
+            const matchPrice = p.price >= min && p.price <= max;
+            return matchCat && matchPrice;
+        });
+
+        renderProducts(filtered);
+    }
+
+    function renderProducts(productList = products) {
+        let html = '';
+        productList.forEach(p => {
+            const stockUrgent = p.stock <= 5 && p.stock > 0 ? `<span class="badge-urgent"><i class="fas fa-exclamation-triangle"></i> ¡ÚLTIMAS ${p.stock}!</span>` : '';
+            const noStock = p.stock === 0 ? '<span class="bg-gray-500 text-white text-xs px-3 py-1 rounded-full">Sin stock</span>' : '';
+            const mainImage = p.images && p.images.length > 0 ? p.images[0] : p.image;
+            html += `
+                <div class="bg-white rounded-2xl p-3 shadow hover:shadow-xl transition cursor-pointer product-card" data-id="${p.id}">
+                    <div class="h-36 bg-cover bg-center rounded-xl mb-2 relative" style="background-image: url('${mainImage}')">
+                        ${stockUrgent || noStock}
+                    </div>
+                    <h4 class="font-bold text-sm">${p.name}</h4>
+                    <div class="text-[#FF6B35] font-black text-xl mt-1">$${p.price.toLocaleString()}</div>
+                    <button class="add-to-cart w-full mt-2 bg-[#2C3E50] text-white py-2 rounded-xl text-sm font-semibold disabled:opacity-50" ${p.stock === 0 ? 'disabled' : ''} data-id="${p.id}" onclick="event.stopPropagation()">
+                        <i class="fas fa-cart-plus mr-1"></i> ${p.stock === 0 ? 'Sin stock' : 'Agregar'}
+                    </button>
+                </div>
+            `;
+        });
+        productGrid.innerHTML = html;
+
+        document.querySelectorAll('.product-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (!e.target.classList.contains('add-to-cart') && !e.target.closest('.add-to-cart')) {
+                    const id = parseInt(card.dataset.id);
+                    openProductDetail(id);
+                }
+            });
+        });
+
+        document.querySelectorAll('.add-to-cart').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = parseInt(btn.dataset.id);
+                addToCart(id);
+            });
+        });
+    }
+
+    function renderDestacados() {
+        const destacados = [...products].sort((a,b) => b.sales - a.sales).slice(0, 6);
+        let html = '';
+        destacados.forEach(p => {
+            const mainImage = p.images && p.images.length > 0 ? p.images[0] : p.image;
+            html += `
+                <div class="bg-white rounded-xl p-2 shadow cursor-pointer" onclick="openProductDetail(${p.id})">
+                    <div class="h-20 bg-cover bg-center rounded-lg" style="background-image: url('${mainImage}')"></div>
+                    <div class="text-xs font-bold mt-1">${p.name}</div>
+                    <div class="text-[#FF6B35] font-bold">$${p.price.toLocaleString()}</div>
+                </div>
+            `;
+        });
+        destacadosGrid.innerHTML = html;
+    }
+
+    // ==================== MODAL DETALLE PRODUCTO (sin stock) ====================
+    function openProductDetail(id) {
+        const product = products.find(p => p.id === id);
+        if (!product) return;
+
+        document.getElementById('detailModalTitle').innerText = product.name;
+        document.getElementById('detailCategory').innerText = product.category;
+        document.getElementById('detailPrice').innerText = `$${product.price.toLocaleString()}`;
+        document.getElementById('detailDescription').innerText = product.description || 'Sin descripción';
+        
+        // Guardar imágenes para el zoom
+        currentImages = product.images && product.images.length > 0 ? product.images : [product.image];
+        currentImageIndex = 0;
+        
+        document.getElementById('mainImageContainer').style.backgroundImage = `url('${currentImages[0]}')`;
+        
+        let thumbnails = '';
+        currentImages.forEach((img, index) => {
+            thumbnails += `<img src="${img}" class="w-16 h-16 object-cover rounded-lg cursor-pointer border-2 ${index === 0 ? 'border-[#FF6B35]' : 'border-transparent'}" onclick="changeMainImage(this.src, ${index})">`;
+        });
+        document.getElementById('thumbnailGallery').innerHTML = thumbnails;
+
+        document.getElementById('addFromDetailBtn').setAttribute('data-id', id);
+        productDetailModal.classList.remove('hidden');
+    }
+
+    window.changeMainImage = function(src, index) {
+        document.getElementById('mainImageContainer').style.backgroundImage = `url('${src}')`;
+        document.querySelectorAll('#thumbnailGallery img').forEach((img, i) => {
+            if (i === index) {
+                img.classList.add('border-[#FF6B35]');
+                img.classList.remove('border-transparent');
+            } else {
+                img.classList.remove('border-[#FF6B35]');
+                img.classList.add('border-transparent');
+            }
+        });
+        currentImageIndex = index;
+    };
+
+    document.getElementById('closeDetailModal').addEventListener('click', () => {
+        productDetailModal.classList.add('hidden');
+    });
+
+    document.getElementById('addFromDetailBtn').addEventListener('click', (e) => {
+        const id = parseInt(e.target.getAttribute('data-id'));
+        addToCart(id);
+        productDetailModal.classList.add('hidden');
+    });
+
+    // ==================== CHECKOUT MEJORADO ====================
+    checkoutBtn.addEventListener('click', () => {
+        openCheckoutModal();
+    });
+
+    function openCheckoutModal() {
+        if (cart.length === 0) return;
+
+        let summaryHtml = '';
+        cart.forEach(item => {
+            summaryHtml += `<div class="flex justify-between text-sm mb-2">
+                <span>${item.name} x${item.quantity}</span>
+                <span class="font-bold">$${(item.price * item.quantity).toLocaleString()}</span>
+            </div>`;
+        });
+        summaryHtml += `<div class="flex justify-between font-bold pt-2 border-t">
+            <span>Total:</span>
+            <span>$${cart.reduce((acc, i) => acc + (i.price * i.quantity), 0).toLocaleString()}</span>
+        </div>`;
+        document.getElementById('checkoutCartSummary').innerHTML = summaryHtml;
+
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        document.getElementById('pickupDate').min = tomorrow.toISOString().split('T')[0];
+
+        checkoutModal.classList.remove('hidden');
+    }
+
+    document.getElementById('closeCheckoutModal').addEventListener('click', () => {
+        checkoutModal.classList.add('hidden');
+    });
+
+    document.querySelectorAll('input[name="deliveryMethod"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            if (e.target.value === 'retiro') {
+                document.getElementById('retiroFields').style.display = 'block';
+            } else {
+                document.getElementById('retiroFields').style.display = 'none';
+            }
+        });
+    });
+
+    document.getElementById('confirmCheckoutBtn').addEventListener('click', async () => {
+        const name = document.getElementById('checkoutName').value;
+
+        if (!name) {
+            showToast('Completá tu nombre', 'error');
+            return;
+        }
+
+        const deliveryMethod = document.querySelector('input[name="deliveryMethod"]:checked').value;
+        const deliveryDetails = deliveryMethod === 'retiro' ? {
+            method: 'Retiro en local',
+            date: document.getElementById('pickupDate').value,
+            time: document.getElementById('pickupTime').value,
+            address: 'Av. Siempre Viva 123'
+        } : {
+            method: 'Envío a domicilio',
+            details: 'Coordinar con el ferretero'
+        };
+
+        const orderCode = generateOrderCode();
+        const total = cart.reduce((acc, i) => acc + (i.price * i.quantity), 0);
+        
+        cart.forEach(item => {
+            const product = products.find(p => p.id === item.id);
+            if (product) {
+                product.stock -= item.quantity;
+                product.sales = (product.sales || 0) + item.quantity;
+            }
+        });
+
+        const order = {
+            code: orderCode,
+            date: new Date().toISOString(),
+            items: [...cart],
+            total,
+            estado: 'Pendiente',
+            cliente: name,
+            delivery: deliveryDetails
+        };
+
+        pedidos.push(order);
+        saveToLocalStorage();
+
+        try {
+            await supabase
+                .from('pedidos')
+                .insert([{
+                    code: orderCode,
+                    cliente: name,
+                    total: total,
+                    items: cart,
+                    estado: 'Pendiente',
+                    delivery: deliveryDetails
+                }]);
+        } catch (error) {
+            console.error('Error guardando pedido en Supabase:', error);
+        }
+
+        document.getElementById('orderCode').innerText = orderCode;
+        let summary = '';
+        cart.forEach(i => summary += `${i.name} x${i.quantity} = $${(i.price*i.quantity).toLocaleString()}\n`);
+        summary += `\n📦 ${deliveryMethod === 'retiro' ? 'Retiro en local' : 'Envío a domicilio'}`;
+        if (deliveryMethod === 'retiro' && deliveryDetails.date) {
+            summary += `\n📅 ${deliveryDetails.date} ${deliveryDetails.time}`;
+        }
+        document.getElementById('orderSummary').innerText = summary + `\n\nTotal: $${total.toLocaleString()}`;
+        
+        checkoutModal.classList.add('hidden');
+        document.getElementById('successModal').classList.remove('hidden');
+        
+        cart = [];
+        updateCartUI();
+        renderProducts();
+        renderDestacados();
+        if (adminSession) renderAdminSection(activeAdminSection);
+    });
+
+    // ==================== CARRITO ====================
+    function addToCart(id) {
+        const product = products.find(p => p.id === id);
+        if (!product || product.stock === 0) return;
+
+        const existing = cart.find(item => item.id === id);
+        if (existing) {
+            if (existing.quantity < product.stock) existing.quantity++;
+            else { showToast('Stock máximo disponible', 'error'); return; }
+        } else {
+            cart.push({ ...product, quantity: 1 });
+        }
+        updateCartUI();
+        showToast(`${product.name} agregado al carrito`);
+    }
+
+    function updateCartUI() {
+        localStorage.setItem('ferreteria_carrito', JSON.stringify(cart));
+        const totalItems = cart.reduce((acc, i) => acc + i.quantity, 0);
+        cartCounter.innerText = totalItems;
+
+        if (cartItems) {
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<p class="text-center text-gray-400 mt-10">Carrito vacío</p>';
+            } else {
+                let html = '';
+                cart.forEach(item => {
+                    const mainImage = item.images && item.images.length > 0 ? item.images[0] : item.image;
+                    html += `
+                        <div class="flex gap-3 mb-3 p-2 bg-gray-50 rounded-xl">
+                            <div class="w-16 h-16 bg-cover bg-center rounded-lg" style="background-image: url('${mainImage}')"></div>
+                            <div class="flex-1">
+                                <h5 class="font-bold text-sm">${item.name}</h5>
+                                <div class="text-[#FF6B35] font-bold">$${item.price.toLocaleString()}</div>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <button class="decCart w-6 h-6 bg-gray-200 rounded-full" data-id="${item.id}">-</button>
+                                    <span class="font-bold">${item.quantity}</span>
+                                    <button class="incCart w-6 h-6 bg-gray-200 rounded-full" data-id="${item.id}">+</button>
+                                    <button class="delCart ml-auto text-red-500" data-id="${item.id}"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                cartItems.innerHTML = html;
+
+                document.querySelectorAll('.incCart').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const id = parseInt(btn.dataset.id);
+                        const item = cart.find(i => i.id === id);
+                        const product = products.find(p => p.id === id);
+                        if (item.quantity < product.stock) item.quantity++;
+                        updateCartUI();
+                    });
+                });
+
+                document.querySelectorAll('.decCart').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const id = parseInt(btn.dataset.id);
+                        const item = cart.find(i => i.id === id);
+                        if (item.quantity > 1) item.quantity--;
+                        else cart = cart.filter(i => i.id !== id);
+                        updateCartUI();
+                    });
+                });
+
+                document.querySelectorAll('.delCart').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const id = parseInt(btn.dataset.id);
+                        cart = cart.filter(i => i.id !== id);
+                        updateCartUI();
+                    });
+                });
+            }
+        }
+
+        const total = cart.reduce((acc, i) => acc + (i.price * i.quantity), 0);
+        cartTotal.innerText = `$${total.toLocaleString()}`;
+        checkoutBtn.disabled = cart.length === 0;
+    }
+
+    function generateOrderCode() {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ123456789';
+        return Array(4).fill(0).map(() => chars[Math.floor(Math.random() * chars.length)]).join('');
+    }
+
+    // ==================== ADMIN ====================
+    function renderAdminSection(section) {
+        activeAdminSection = section;
+        let html = '';
+
+        if (section === 'resumen') {
+            const totalProductos = products.length;
+            const stockBajo = products.filter(p => p.stock <= 5).length;
+            const pedidosHoy = pedidos.filter(p => new Date(p.date).toDateString() === new Date().toDateString()).length;
+            const ventasHoy = pedidos.filter(p => new Date(p.date).toDateString() === new Date().toDateString())
+                                   .reduce((acc, p) => acc + p.total, 0);
+
+            html = `
+                <h2 class="text-2xl font-bold mb-6">📊 Resumen del negocio</h2>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-blue-50 p-6 rounded-2xl">
+                        <i class="fas fa-boxes text-3xl text-blue-600 mb-2"></i>
+                        <div class="text-3xl font-black">${totalProductos}</div>
+                        <div class="text-gray-600">Productos totales</div>
+                    </div>
+                    <div class="bg-yellow-50 p-6 rounded-2xl">
+                        <i class="fas fa-exclamation-triangle text-3xl text-yellow-600 mb-2"></i>
+                        <div class="text-3xl font-black">${stockBajo}</div>
+                        <div class="text-gray-600">Stock bajo (≤5)</div>
+                    </div>
+                    <div class="bg-green-50 p-6 rounded-2xl">
+                        <i class="fas fa-shopping-bag text-3xl text-green-600 mb-2"></i>
+                        <div class="text-3xl font-black">${pedidosHoy}</div>
+                        <div class="text-gray-600">Pedidos hoy</div>
+                    </div>
+                    <div class="bg-purple-50 p-6 rounded-2xl">
+                        <i class="fas fa-dollar-sign text-3xl text-purple-600 mb-2"></i>
+                        <div class="text-3xl font-black">$${ventasHoy.toLocaleString()}</div>
+                        <div class="text-gray-600">Ventas hoy</div>
+                    </div>
+                </div>
+
+                <h3 class="text-xl font-bold mb-4">⚠️ Alertas de stock bajo</h3>
+                <div class="bg-white rounded-2xl shadow overflow-hidden">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr><th class="p-3 text-left">Producto</th><th class="p-3 text-left">Stock</th><th class="p-3 text-left">Acción</th></tr>
+                        </thead>
+                        <tbody>
+                            ${products.filter(p => p.stock <= 5).map(p => `
+                                <tr class="border-t">
+                                    <td class="p-3">${p.name}</td>
+                                    <td class="p-3"><span class="stock-low">${p.stock} unidades</span></td>
+                                    <td class="p-3"><button class="edit-stock-btn text-blue-600" data-id="${p.id}">Actualizar stock</button></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        } else if (section === 'metricas') {
+            const ventasTotales = pedidos.reduce((acc, p) => acc + p.total, 0);
+            const totalPedidos = pedidos.length;
+            const ticketPromedio = totalPedidos > 0 ? ventasTotales / totalPedidos : 0;
+            
+            const ventasPorCategoria = {};
+            pedidos.forEach(pedido => {
+                pedido.items.forEach(item => {
+                    if (!ventasPorCategoria[item.category]) {
+                        ventasPorCategoria[item.category] = 0;
+                    }
+                    ventasPorCategoria[item.category] += item.price * item.quantity;
+                });
+            });
+
+            const productoMasVendido = [...products].sort((a,b) => b.sales - a.sales)[0];
+
+            html = `
+                <h2 class="text-2xl font-bold mb-6">📈 Métricas detalladas</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-green-50 p-6 rounded-2xl">
+                        <i class="fas fa-chart-line text-3xl text-green-600 mb-2"></i>
+                        <div class="text-3xl font-black">$${ventasTotales.toLocaleString()}</div>
+                        <div class="text-gray-600">Ventas totales</div>
+                    </div>
+                    <div class="bg-blue-50 p-6 rounded-2xl">
+                        <i class="fas fa-receipt text-3xl text-blue-600 mb-2"></i>
+                        <div class="text-3xl font-black">${totalPedidos}</div>
+                        <div class="text-gray-600">Pedidos totales</div>
+                    </div>
+                    <div class="bg-purple-50 p-6 rounded-2xl">
+                        <i class="fas fa-calculator text-3xl text-purple-600 mb-2"></i>
+                        <div class="text-3xl font-black">$${ticketPromedio.toFixed(0).toLocaleString()}</div>
+                        <div class="text-gray-600">Ticket promedio</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-white rounded-2xl shadow p-6">
+                        <h3 class="text-lg font-bold mb-4">🏆 Producto estrella</h3>
+                        ${productoMasVendido ? `
+                            <div class="flex items-center gap-4">
+                                <img src="${productoMasVendido.image}" class="w-20 h-20 rounded-xl object-cover">
+                                <div>
+                                    <div class="font-bold">${productoMasVendido.name}</div>
+                                    <div class="text-[#FF6B35] font-bold">$${productoMasVendido.price.toLocaleString()}</div>
+                                    <div class="text-sm text-gray-600">${productoMasVendido.sales || 0} unidades vendidas</div>
+                                </div>
+                            </div>
+                        ` : '<p class="text-gray-500">Sin datos</p>'}
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow p-6">
+                        <h3 class="text-lg font-bold mb-4">📊 Ventas por categoría</h3>
+                        ${Object.entries(ventasPorCategoria).map(([cat, monto]) => `
+                            <div class="flex justify-between mb-2">
+                                <span>${cat}</span>
+                                <span class="font-bold">$${monto.toLocaleString()}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        } else if (section === 'productos') {
+            html = `
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold">📦 Gestión de Productos</h2>
+                    <button id="addProductBtn" class="bg-[#FF6B35] text-white px-6 py-3 rounded-xl font-bold">
+                        <i class="fas fa-plus mr-2"></i>Agregar Producto
+                    </button>
+                </div>
+                <div class="bg-white rounded-2xl shadow overflow-hidden">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="p-3 text-left">Imagen</th>
+                                <th class="p-3 text-left">Producto</th>
+                                <th class="p-3 text-left">Categoría</th>
+                                <th class="p-3 text-left">Stock</th>
+                                <th class="p-3 text-left">Precio</th>
+                                <th class="p-3 text-left">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${products.map(p => {
+                                const mainImage = p.images && p.images.length > 0 ? p.images[0] : p.image;
+                                return `
+                                <tr class="border-t">
+                                    <td class="p-3"><img src="${mainImage}" class="product-thumb"></td>
+                                    <td class="p-3 font-bold">${p.name}</td>
+                                    <td class="p-3">${p.category}</td>
+                                    <td class="p-3"><span class="${p.stock <= 5 ? 'stock-low' : ''}">${p.stock}</span></td>
+                                    <td class="p-3">$${p.price.toLocaleString()}</td>
+                                    <td class="p-3">
+                                        <button class="edit-product text-blue-600 mr-2" data-id="${p.id}"><i class="fas fa-edit"></i></button>
+                                        <button class="delete-product text-red-600" data-id="${p.id}"><i class="fas fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                            `}).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        } else if (section === 'pedidos') {
+            const pedidosHoy = pedidos.filter(p => new Date(p.date).toDateString() === new Date().toDateString());
+            html = `
+                <h2 class="text-2xl font-bold mb-6">📋 Pedidos del día</h2>
+                <div class="bg-white rounded-2xl shadow overflow-hidden">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="p-3 text-left">Código</th>
+                                <th class="p-3 text-left">Cliente</th>
+                                <th class="p-3 text-left">Total</th>
+                                <th class="p-3 text-left">Estado</th>
+                                <th class="p-3 text-left">Entrega</th>
+                                <th class="p-3 text-left">Horario</th>
+                                <th class="p-3 text-left">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${pedidosHoy.map(p => `
+                                <tr class="border-t">
+                                    <td class="p-3 font-mono font-bold">${p.code}</td>
+                                    <td class="p-3">${p.cliente}</td>
+                                    <td class="p-3">$${p.total.toLocaleString()}</td>
+                                    <td class="p-3">
+                                        <select class="estado-select border rounded-lg px-2 py-1" data-code="${p.code}">
+                                            <option ${p.estado === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
+                                            <option ${p.estado === 'En preparación' ? 'selected' : ''}>En preparación</option>
+                                            <option ${p.estado === 'Entregado' ? 'selected' : ''}>Entregado</option>
+                                        </select>
+                                    </td>
+                                    <td class="p-3">${p.delivery?.method || 'N/A'}</td>
+                                    <td class="p-3">${p.delivery?.date || new Date(p.date).toLocaleTimeString()}</td>
+                                    <td class="p-3">
+                                        <button class="complete-order bg-green-500 text-white px-3 py-1 rounded-lg text-sm" data-code="${p.code}">
+                                            <i class="fas fa-check"></i> Completar
+                                        </button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        adminContent.innerHTML = html;
+
+        if (section === 'productos') {
+            document.getElementById('addProductBtn').addEventListener('click', () => openProductModal());
+            document.querySelectorAll('.edit-product').forEach(btn => {
+                btn.addEventListener('click', () => openProductModal(parseInt(btn.dataset.id)));
+            });
+            document.querySelectorAll('.delete-product').forEach(btn => {
+                btn.addEventListener('click', () => deleteProduct(parseInt(btn.dataset.id)));
+            });
+        }
+
+        if (section === 'pedidos') {
+            document.querySelectorAll('.estado-select').forEach(select => {
+                select.addEventListener('change', (e) => {
+                    const code = select.dataset.code;
+                    const pedido = pedidos.find(p => p.code === code);
+                    if (pedido) {
+                        pedido.estado = select.value;
+                        saveToLocalStorage();
+                        showToast('Estado actualizado');
+                    }
+                });
+            });
+
+            document.querySelectorAll('.complete-order').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const code = btn.dataset.code;
+                    const pedido = pedidos.find(p => p.code === code);
+                    if (pedido) {
+                        pedido.estado = 'Entregado';
+                        saveToLocalStorage();
+                        renderAdminSection('pedidos');
+                        showToast('Pedido completado');
+                    }
+                });
+            });
+        }
+    }
+
+    function openProductModal(id = null) {
+        currentProductId = id;
+        document.getElementById('modalTitle').innerText = id ? 'Editar Producto' : 'Agregar Producto';
+        
+        const catSelect = document.getElementById('productCategory');
+        catSelect.innerHTML = CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('');
+
+        if (id) {
+            const product = products.find(p => p.id === id);
+            document.getElementById('productId').value = product.id;
+            document.getElementById('productName').value = product.name;
+            document.getElementById('productDescription').value = product.description || '';
+            document.getElementById('productCategory').value = product.category;
+            document.getElementById('productPrice').value = product.price;
+            document.getElementById('productStock').value = product.stock;
+            
+            currentImages = product.images || [product.image];
+            renderMultiImageGallery(currentImages);
+        } else {
+            document.getElementById('productId').value = '';
+            document.getElementById('productForm').reset();
+            document.getElementById('productDescription').value = '';
+            currentImages = [];
+            renderMultiImageGallery([]);
+        }
+
+        document.getElementById('productModal').classList.remove('hidden');
+    }
+
+    function renderMultiImageGallery(images) {
+        const container = document.getElementById('multiImageContainer');
+        let html = '';
+        
+        images.forEach((img, index) => {
+            html += `
+                <div class="multi-image-item">
+                    <img src="${img}">
+                    <div class="remove-image" onclick="removeImage(${index})">
+                        <i class="fas fa-times"></i>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += `
+            <div class="add-more-images" onclick="document.getElementById('multiImageUpload').click()">
+                <i class="fas fa-plus text-2xl text-gray-400"></i>
+                <span class="text-xs text-gray-500 mt-1">Agregar</span>
+            </div>
+        `;
+        
+        container.innerHTML = html;
+    }
+
+    window.removeImage = function(index) {
+        currentImages.splice(index, 1);
+        renderMultiImageGallery(currentImages);
+    };
+
+    async function deleteProduct(id) {
+        const product = products.find(p => p.id === id);
+        if (!product) return;
+        
+        if (confirm('¿Eliminar producto?')) {
+            try {
+                const { error: dbError } = await supabase
+                    .from('productos')
+                    .delete()
+                    .eq('id', id);
+                
+                if (dbError) throw dbError;
+                
+                await cargarProductosDB();
+                showToast('Producto eliminado');
+            } catch (error) {
+                console.error('Error eliminando producto:', error);
+                showToast('Error al eliminar', 'error');
+            }
+        }
+    }
+
+    // ==================== INICIALIZACIÓN ====================
+    function init() {
+        renderCategories();
+        renderProducts();
+        renderDestacados();
+        cargarProductosDB();
+
+        const catFilter = document.getElementById('categoryFilter');
+        CATEGORIES.forEach(c => catFilter.innerHTML += `<option value="${c}">${c}</option>`);
+
+        document.getElementById('applyFilters').addEventListener('click', filterProducts);
+
+        document.getElementById('cartToggle').addEventListener('click', () => {
+            cartSidebar.classList.remove('translate-x-full');
+            document.getElementById('cartOverlay').classList.remove('hidden');
+        });
+
+        document.getElementById('closeCart').addEventListener('click', () => {
+            cartSidebar.classList.add('translate-x-full');
+            document.getElementById('cartOverlay').classList.add('hidden');
+        });
+
+        document.getElementById('cartOverlay').addEventListener('click', () => {
+            cartSidebar.classList.add('translate-x-full');
+            document.getElementById('cartOverlay').classList.add('hidden');
+        });
+
+        document.getElementById('adminLockBtn').addEventListener('click', () => {
+            document.getElementById('adminLoginModal').classList.remove('hidden');
+        });
+
+        document.getElementById('closeAdminLogin').addEventListener('click', () => {
+            document.getElementById('adminLoginModal').classList.add('hidden');
+        });
+
+        document.getElementById('loginAdminBtn').addEventListener('click', () => {
+            const user = document.getElementById('adminUser').value;
+            const pass = document.getElementById('adminPass').value;
+            if (user === 'admin' && pass === 'admin123') {
+                adminSession = true;
+                localStorage.setItem('ferreteria_admin_session', 'true');
+                document.getElementById('adminLoginModal').classList.add('hidden');
+                clienteView.classList.add('hidden');
+                adminView.classList.remove('hidden');
+                adminSidebar.classList.remove('hidden');
+                renderAdminSection('resumen');
+                showToast('Bienvenido admin');
+            } else {
+                showToast('Credenciales incorrectas', 'error');
+            }
+        });
+
+        document.querySelectorAll('[data-section]').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('[data-section]').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                renderAdminSection(link.dataset.section);
+            });
+        });
+
+        document.getElementById('logoutAdmin').addEventListener('click', (e) => {
+            e.preventDefault();
+            adminSession = false;
+            localStorage.setItem('ferreteria_admin_session', 'false');
+            clienteView.classList.remove('hidden');
+            adminView.classList.add('hidden');
+            adminSidebar.classList.add('hidden');
+            showToast('Sesión cerrada');
+        });
+
+        document.getElementById('closeProductModal').addEventListener('click', () => {
+            document.getElementById('productModal').classList.add('hidden');
+        });
+
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('productId').value;
+            const fileInput = document.getElementById('multiImageUpload');
+            const files = fileInput.files.length > 0 ? Array.from(fileInput.files) : [];
+            
+            const productData = {
+                id: id ? parseInt(id) : undefined,
+                name: document.getElementById('productName').value,
+                description: document.getElementById('productDescription').value,
+                category: document.getElementById('productCategory').value,
+                price: parseFloat(document.getElementById('productPrice').value),
+                stock: parseInt(document.getElementById('productStock').value),
+                images: currentImages,
+                sales: id ? products.find(p => p.id === parseInt(id))?.sales || 0 : 0
+            };
+            
+            await guardarProductoDB(productData, files);
+            document.getElementById('productModal').classList.add('hidden');
+        });
+
+        document.getElementById('multiImageUpload').addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    currentImages.push(e.target.result);
+                    renderMultiImageGallery(currentImages);
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        globalSearch.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            if (term.length < 2) {
+                predictiveResults.classList.add('hidden');
+                return;
+            }
+            const results = products.filter(p => p.name.toLowerCase().includes(term)).slice(0, 5);
+            if (results.length) {
+                predictiveResults.classList.remove('hidden');
+                predictiveResults.innerHTML = results.map(p => {
+                    const mainImage = p.images && p.images.length > 0 ? p.images[0] : p.image;
+                    return `
+                    <div class="p-2 hover:bg-gray-100 cursor-pointer flex items-center gap-2" onclick="openProductDetail(${p.id})">
+                        <img src="${mainImage}" class="w-8 h-8 rounded object-cover">
+                        <span>${p.name}</span>
+                    </div>
+                `}).join('');
+            } else {
+                predictiveResults.classList.add('hidden');
+            }
+        });
+
+        if (darkMode) {
+            appWrapper.classList.add('dark-mode');
+            darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        }
+
+        darkModeToggle.addEventListener('click', () => {
+            darkMode = !darkMode;
+            appWrapper.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', darkMode);
+            darkModeToggle.innerHTML = darkMode ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        });
+
+        document.getElementById('closeSuccessModal').addEventListener('click', () => {
+            document.getElementById('successModal').classList.add('hidden');
+        });
+
+        document.getElementById('whatsappShare').addEventListener('click', () => {
+            const code = document.getElementById('orderCode').innerText;
+            const summary = document.getElementById('orderSummary').innerText;
+            const msg = `🎉 *Pedido confirmado en Ferretería El Constructor* 🎉\n\nCódigo: ${code}\n\n${summary}`;
+            window.open(`https://wa.me/5491159602127?text=${encodeURIComponent(msg)}`, '_blank');
+        });
+
+        window.addEventListener('offline', () => {
+            document.getElementById('offlineBanner').classList.remove('hidden');
+        });
+        window.addEventListener('online', () => {
+            document.getElementById('offlineBanner').classList.add('hidden');
+        });
+
+        updateCartUI();
+    }
+
+    init();
+})();
+</script>
+</body>
+</html>
