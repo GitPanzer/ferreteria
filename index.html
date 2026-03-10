@@ -12,6 +12,8 @@
   <!-- PhotoSwipe para zoom de imágenes -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.4.2/photoswipe.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.4.2/photoswipe.min.js"></script>
+  <!-- jsPDF para generar PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -230,6 +232,81 @@
     .clickable-image:hover {
       transform: scale(1.02);
     }
+    
+    /* Mejoras responsive adicionales */
+    @media (max-width: 640px) {
+      .header {
+        flex-wrap: wrap;
+        padding: 0.75rem;
+      }
+      .product-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.75rem;
+      }
+      .category-grid {
+        gap: 0.5rem;
+      }
+      .cat-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+        white-space: nowrap;
+      }
+      .footer .grid {
+        gap: 1.5rem;
+      }
+      .modal-content {
+        margin: 1rem;
+        padding: 1rem;
+      }
+      .cart-sidebar {
+        max-width: 100%;
+      }
+      .admin-sidebar {
+        position: fixed;
+        z-index: 50;
+        width: 250px;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+      .admin-sidebar.open {
+        transform: translateX(0);
+      }
+      .main-content {
+        padding: 1rem;
+      }
+    }
+    
+    /* Ajustes para tablets */
+    @media (min-width: 641px) and (max-width: 1024px) {
+      .product-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+      }
+    }
+    
+    /* Sidebar admin responsive */
+    .admin-sidebar {
+      transition: transform 0.3s ease;
+    }
+    .admin-sidebar.hidden {
+      display: none;
+    }
+    .admin-sidebar.mobile-open {
+      transform: translateX(0);
+    }
+    
+    /* Modal responsive */
+    .modal-content {
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    /* Ajustes de touch para móvil */
+    .clickable-image {
+      -webkit-tap-highlight-color: transparent;
+    }
+    button, a {
+      -webkit-tap-highlight-color: transparent;
+    }
   </style>
 </head>
 <body>
@@ -243,30 +320,79 @@
   <!-- TOAST CONTAINER -->
   <div id="toastContainer" class="fixed bottom-5 right-5 z-50"></div>
 
+  <!-- MODAL BIENVENIDA -->
+  <div id="welcomeModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[200] hidden">
+    <div class="bg-white rounded-3xl p-8 max-w-lg w-full mx-4 animate-fade-in">
+      <div class="text-center">
+        <div class="w-24 h-24 bg-[#FF6B35] rounded-full flex items-center justify-center mx-auto mb-6">
+          <i class="fas fa-tools text-4xl text-white"></i>
+        </div>
+        <h2 class="text-3xl font-black mb-4">¡Bienvenido a Ferretería El Constructor!</h2>
+        <p class="text-gray-600 mb-6">
+          Somos una ferretería con más de 20 años de experiencia, comprometidos en brindar los mejores productos y servicios para tus proyectos de construcción, reparación y mantenimiento.
+        </p>
+        <div class="space-y-4 text-left mb-8">
+          <div class="flex items-start gap-3">
+            <i class="fas fa-check-circle text-[#FF6B35] text-xl mt-1"></i>
+            <div>
+              <h3 class="font-bold">🛠️ Productos de calidad</h3>
+              <p class="text-sm text-gray-500">Trabajamos con las mejores marcas del mercado</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <i class="fas fa-check-circle text-[#FF6B35] text-xl mt-1"></i>
+            <div>
+              <h3 class="font-bold">🚚 Envíos y retiros</h3>
+              <p class="text-sm text-gray-500">Podés retirar en nuestro local o coordinar envío</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <i class="fas fa-check-circle text-[#FF6B35] text-xl mt-1"></i>
+            <div>
+              <h3 class="font-bold">💳 Pagá como quieras</h3>
+              <p class="text-sm text-gray-500">Efectivo, transferencia o tarjetas en el local</p>
+            </div>
+          </div>
+        </div>
+        <button id="closeWelcomeBtn" class="w-full bg-[#FF6B35] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#2C3E50] transition">
+          ¡Empezar a comprar!
+        </button>
+        <p class="text-xs text-gray-400 mt-4">Mostrar solo una vez</p>
+      </div>
+    </div>
+  </div>
+
   <!-- HEADER -->
-  <header class="bg-white sticky top-0 z-40 border-b border-gray-200 px-6 py-3 flex items-center justify-between">
-    <div class="flex items-center gap-4">
-      <div class="text-2xl font-black text-[#2C3E50]"><i class="fas fa-tools text-[#FF6B35] mr-2"></i>El Constructor</div>
+  <header class="bg-white sticky top-0 z-40 border-b border-gray-200 px-4 sm:px-6 py-3 flex items-center justify-between header">
+    <div class="flex items-center gap-2 sm:gap-4">
+      <div class="text-xl sm:text-2xl font-black text-[#2C3E50]">
+        <i class="fas fa-tools text-[#FF6B35] mr-2"></i>
+        <span class="hidden xs:inline">El Constructor</span>
+        <span class="xs:hidden">El Constructor - Ferreteria</span>
+      </div>
       <div class="relative hidden md:block">
         <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-        <input type="text" id="globalSearch" placeholder="Buscar productos..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-full w-80 focus:outline-none focus:border-[#FF6B35]">
+        <input type="text" id="globalSearch" placeholder="Buscar productos..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-full w-64 lg:w-80 focus:outline-none focus:border-[#FF6B35]">
         <div id="predictiveResults" class="absolute top-full left-0 right-0 bg-white shadow-lg rounded-xl mt-1 max-h-80 overflow-y-auto hidden"></div>
       </div>
     </div>
-    <div class="flex items-center gap-4">
-      <button id="darkModeToggle" class="p-2 rounded-full hover:bg-gray-100"><i class="fas fa-moon"></i></button>
+    <div class="flex items-center gap-2 sm:gap-4">
+      <button id="darkModeToggle" class="p-2 rounded-full hover:bg-gray-100 text-sm sm:text-base">
+        <i class="fas fa-moon"></i>
+      </button>
       <div class="cart-icon relative cursor-pointer" id="cartToggle">
-        <i class="fas fa-shopping-cart text-2xl text-[#2C3E50]"></i>
+        <i class="fas fa-shopping-cart text-xl sm:text-2xl text-[#2C3E50]"></i>
         <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full" id="cartCounter">0</span>
       </div>
-      <button class="border border-[#2C3E50] px-5 py-2 rounded-full font-semibold hover:bg-[#2C3E50] hover:text-white transition" id="adminLockBtn">
-        <i class="fas fa-lock mr-2"></i>Admin
+      <button class="border border-[#2C3E50] px-3 sm:px-5 py-1.5 sm:py-2 rounded-full text-sm sm:text-base font-semibold hover:bg-[#2C3E50] hover:text-white transition" id="adminLockBtn">
+        <i class="fas fa-lock mr-1 sm:mr-2"></i>
+        <span class="hidden xs:inline">Admin</span>
       </button>
     </div>
   </header>
 
   <!-- MAIN CONTENT -->
-  <div class="flex min-h-screen">
+  <div class="flex min-h-screen relative">
     <!-- SIDEBAR ADMIN (hidden por defecto) -->
     <div id="adminSidebar" class="admin-sidebar hidden">
       <div class="p-6 border-b border-gray-600">
@@ -283,41 +409,41 @@
     </div>
 
     <!-- CONTENIDO PRINCIPAL (CLIENTE o ADMIN) -->
-    <main id="mainContent" class="flex-1 p-6">
+    <main id="mainContent" class="flex-1 p-4 sm:p-6 main-content">
       <!-- CLIENTE VIEW (default) -->
       <div id="clienteView">
         <!-- CATEGORÍAS -->
-        <div class="mb-8">
-          <h2 class="text-2xl font-bold text-[#2C3E50] mb-4"><i class="fas fa-th-large text-[#FF6B35] mr-2"></i>Categorías</h2>
-          <div class="flex gap-3 overflow-x-auto pb-2" id="categoryGrid"></div>
+        <div class="mb-6 sm:mb-8">
+          <h2 class="text-xl sm:text-2xl font-bold text-[#2C3E50] mb-4"><i class="fas fa-th-large text-[#FF6B35] mr-2"></i>Categorías</h2>
+          <div class="flex gap-2 sm:gap-3 overflow-x-auto pb-2 category-grid" id="categoryGrid"></div>
         </div>
 
         <!-- FILTROS AVANZADOS -->
-        <div class="bg-gray-50 p-4 rounded-xl mb-6 flex flex-wrap gap-4 items-center">
-          <select id="categoryFilter" class="border rounded-lg px-4 py-2">
+        <div class="bg-gray-50 p-4 rounded-xl mb-6 flex flex-wrap gap-3 sm:gap-4 items-center">
+          <select id="categoryFilter" class="border rounded-lg px-3 sm:px-4 py-2 text-sm sm:text-base w-full sm:w-auto">
             <option value="">Todas las categorías</option>
           </select>
-          <input type="number" id="minPrice" placeholder="Precio mínimo" class="border rounded-lg px-4 py-2 w-32">
-          <input type="number" id="maxPrice" placeholder="Precio máximo" class="border rounded-lg px-4 py-2 w-32">
-          <button id="applyFilters" class="bg-[#FF6B35] text-white px-6 py-2 rounded-lg font-semibold">Filtrar</button>
+          <input type="number" id="minPrice" placeholder="Precio mínimo" class="border rounded-lg px-3 sm:px-4 py-2 w-28 sm:w-32 text-sm sm:text-base">
+          <input type="number" id="maxPrice" placeholder="Precio máximo" class="border rounded-lg px-3 sm:px-4 py-2 w-28 sm:w-32 text-sm sm:text-base">
+          <button id="applyFilters" class="bg-[#FF6B35] text-white px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto">Filtrar</button>
         </div>
 
         <!-- BANNER OFERTAS -->
-        <div id="ofertasBanner" class="bg-gradient-to-r from-orange-400 to-red-500 text-white p-6 rounded-3xl mb-8 flex items-center justify-between">
+        <div id="ofertasBanner" class="bg-gradient-to-r from-orange-400 to-red-500 text-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl mb-6 sm:mb-8 flex items-center justify-between">
           <div>
-            <h3 class="text-2xl font-black">🔥 Ofertas del día</h3>
-            <p>Hasta 30% off en herramientas seleccionadas</p>
+            <h3 class="text-xl sm:text-2xl font-black">🔥 Ofertas del día</h3>
+            <p class="text-sm sm:text-base">Hasta 30% off en herramientas seleccionadas</p>
           </div>
-          <i class="fas fa-tags text-5xl opacity-50"></i>
+          <i class="fas fa-tags text-3xl sm:text-5xl opacity-50"></i>
         </div>
 
         <!-- PRODUCTOS DESTACADOS -->
-        <h2 class="text-2xl font-bold text-[#2C3E50] mb-4"><i class="fas fa-star text-[#FF6B35] mr-2"></i>Más vendidos</h2>
-        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8" id="destacadosGrid"></div>
+        <h2 class="text-xl sm:text-2xl font-bold text-[#2C3E50] mb-4"><i class="fas fa-star text-[#FF6B35] mr-2"></i>Más vendidos</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-6 sm:mb-8" id="destacadosGrid"></div>
 
         <!-- TODOS LOS PRODUCTOS -->
-        <h2 class="text-2xl font-bold text-[#2C3E50] mb-4"><i class="fas fa-box text-[#FF6B35] mr-2"></i>Todos los productos</h2>
-        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4" id="productGrid"></div>
+        <h2 class="text-xl sm:text-2xl font-bold text-[#2C3E50] mb-4"><i class="fas fa-box text-[#FF6B35] mr-2"></i>Todos los productos</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 product-grid" id="productGrid"></div>
       </div>
 
       <!-- ADMIN VIEW (hidden) -->
@@ -328,25 +454,25 @@
   </div>
 
   <!-- MODAL DETALLE PRODUCTO (sin stock) -->
-  <div id="productDetailModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[90] hidden">
-    <div class="bg-white rounded-3xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+  <div id="productDetailModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[90] hidden p-4">
+    <div class="bg-white rounded-3xl p-4 sm:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto modal-content">
       <div class="flex justify-between items-center mb-4">
-        <h3 class="text-2xl font-bold" id="detailModalTitle"></h3>
+        <h3 class="text-xl sm:text-2xl font-bold" id="detailModalTitle"></h3>
         <i class="fas fa-times text-2xl cursor-pointer" id="closeDetailModal"></i>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         <!-- Carrusel de imágenes con zoom -->
         <div>
-          <div id="mainImageContainer" class="h-64 bg-cover bg-center rounded-xl mb-2 clickable-image" style="background-image: url('')" onclick="openZoomModal(currentImages, currentImageIndex)"></div>
+          <div id="mainImageContainer" class="h-48 sm:h-64 bg-cover bg-center rounded-xl mb-2 clickable-image" style="background-image: url('')" onclick="openZoomModal(currentImages, currentImageIndex)"></div>
           <div id="thumbnailGallery" class="flex gap-2 overflow-x-auto"></div>
           <p class="text-xs text-gray-500 mt-2 text-center">Hacé clic en la imagen para ver en pantalla completa con zoom</p>
         </div>
         <!-- Detalles (sin stock) -->
         <div>
-          <p class="text-gray-600 mb-2" id="detailCategory"></p>
-          <p class="text-3xl font-black text-[#FF6B35] mb-4" id="detailPrice"></p>
-          <p class="text-gray-700 mb-4" id="detailDescription"></p>
-          <button class="w-full bg-[#2C3E50] text-white py-3 rounded-xl font-bold hover:bg-[#FF6B35] transition" id="addFromDetailBtn">
+          <p class="text-gray-600 mb-2 text-sm sm:text-base" id="detailCategory"></p>
+          <p class="text-2xl sm:text-3xl font-black text-[#FF6B35] mb-4" id="detailPrice"></p>
+          <p class="text-gray-700 mb-4 text-sm sm:text-base" id="detailDescription"></p>
+          <button class="w-full bg-[#2C3E50] text-white py-3 rounded-xl font-bold hover:bg-[#FF6B35] transition text-sm sm:text-base" id="addFromDetailBtn">
             <i class="fas fa-cart-plus mr-2"></i>Agregar al carrito
           </button>
         </div>
@@ -357,14 +483,14 @@
   <!-- MODAL ZOOM DE IMAGEN -->
   <div id="zoomModal" class="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-[100] hidden">
     <div class="relative w-full h-full flex items-center justify-center">
-      <button class="absolute top-5 right-5 text-white text-3xl z-10 hover:text-[#FF6B35]" onclick="closeZoomModal()">
+      <button class="absolute top-5 right-5 text-white text-2xl sm:text-3xl z-10 hover:text-[#FF6B35]" onclick="closeZoomModal()">
         <i class="fas fa-times"></i>
       </button>
-      <button class="absolute left-5 text-white text-4xl z-10 hover:text-[#FF6B35]" onclick="prevZoomImage()">
+      <button class="absolute left-2 sm:left-5 text-white text-3xl sm:text-4xl z-10 hover:text-[#FF6B35]" onclick="prevZoomImage()">
         <i class="fas fa-chevron-left"></i>
       </button>
-      <img id="zoomImage" class="max-h-[90vh] max-w-[90vw] object-contain" src="" alt="Zoom">
-      <button class="absolute right-5 text-white text-4xl z-10 hover:text-[#FF6B35]" onclick="nextZoomImage()">
+      <img id="zoomImage" class="max-h-[80vh] sm:max-h-[90vh] max-w-[90vw] object-contain" src="" alt="Zoom">
+      <button class="absolute right-2 sm:right-5 text-white text-3xl sm:text-4xl z-10 hover:text-[#FF6B35]" onclick="nextZoomImage()">
         <i class="fas fa-chevron-right"></i>
       </button>
       <div class="absolute bottom-5 text-white text-sm bg-black bg-opacity-50 px-4 py-2 rounded-full">
@@ -374,10 +500,10 @@
   </div>
 
   <!-- MODAL CHECKOUT MEJORADO -->
-  <div id="checkoutModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[90] hidden">
-    <div class="bg-white rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+  <div id="checkoutModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[90] hidden p-4">
+    <div class="bg-white rounded-3xl p-4 sm:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto modal-content">
       <div class="flex justify-between items-center mb-4">
-        <h3 class="text-2xl font-bold">Finalizar compra</h3>
+        <h3 class="text-xl sm:text-2xl font-bold">Finalizar compra</h3>
         <i class="fas fa-times text-2xl cursor-pointer" id="closeCheckoutModal"></i>
       </div>
       
@@ -388,14 +514,14 @@
 
       <!-- Opciones de entrega -->
       <div class="mb-6">
-        <h4 class="font-bold mb-3">Método de entrega</h4>
+        <h4 class="font-bold mb-3 text-sm sm:text-base">Método de entrega</h4>
         <div class="space-y-3">
           <label class="flex items-center p-3 border rounded-xl cursor-pointer hover:border-[#FF6B35]">
             <input type="radio" name="deliveryMethod" value="retiro" class="mr-3" checked>
             <div>
-              <span class="font-bold">Retiro en local</span>
-              <p class="text-sm text-gray-500">Av. Siempre Viva 123</p>
-              <a href="https://maps.google.com/?q=Av.+Siempre+Viva+123" target="_blank" class="text-[#FF6B35] text-sm">
+              <span class="font-bold text-sm sm:text-base">Retiro en local</span>
+              <p class="text-xs sm:text-sm text-gray-500">Av. Siempre Viva 123</p>
+              <a href="https://maps.google.com/?q=Av.+Siempre+Viva+123" target="_blank" class="text-[#FF6B35] text-xs sm:text-sm">
                 <i class="fas fa-map-marker-alt mr-1"></i>Ver en Google Maps
               </a>
             </div>
@@ -404,8 +530,8 @@
           <label class="flex items-center p-3 border rounded-xl cursor-pointer hover:border-[#FF6B35]">
             <input type="radio" name="deliveryMethod" value="domicilio" class="mr-3">
             <div>
-              <span class="font-bold">Envío a domicilio</span>
-              <p class="text-sm text-gray-500">Coordinar con el ferretero</p>
+              <span class="font-bold text-sm sm:text-base">Envío a domicilio</span>
+              <p class="text-xs sm:text-sm text-gray-500">Coordinar con el ferretero</p>
             </div>
           </label>
         </div>
@@ -413,9 +539,9 @@
 
       <!-- Fecha y hora (para retiro) -->
       <div id="retiroFields" class="mb-6">
-        <h4 class="font-bold mb-3">Fecha y hora de retiro</h4>
-        <input type="date" id="pickupDate" class="w-full border rounded-xl px-4 py-3 mb-3" min="">
-        <select id="pickupTime" class="w-full border rounded-xl px-4 py-3">
+        <h4 class="font-bold mb-3 text-sm sm:text-base">Fecha y hora de retiro</h4>
+        <input type="date" id="pickupDate" class="w-full border rounded-xl px-4 py-3 mb-3 text-sm sm:text-base" min="">
+        <select id="pickupTime" class="w-full border rounded-xl px-4 py-3 text-sm sm:text-base">
           <option>9:00 - 12:00</option>
           <option>12:00 - 15:00</option>
           <option>15:00 - 18:00</option>
@@ -425,12 +551,12 @@
 
       <!-- Datos de contacto - SOLO NOMBRE -->
       <div class="mb-6">
-        <h4 class="font-bold mb-3">Datos de contacto</h4>
-        <input type="text" id="checkoutName" placeholder="Nombre completo *" class="w-full border rounded-xl px-4 py-3">
+        <h4 class="font-bold mb-3 text-sm sm:text-base">Datos de contacto</h4>
+        <input type="text" id="checkoutName" placeholder="Nombre completo *" class="w-full border rounded-xl px-4 py-3 text-sm sm:text-base">
         <p class="text-xs text-gray-500 mt-1">El ferretero se comunicará para coordinar la entrega</p>
       </div>
 
-      <button id="confirmCheckoutBtn" class="w-full bg-[#FF6B35] text-white py-3 rounded-xl font-bold text-lg">
+      <button id="confirmCheckoutBtn" class="w-full bg-[#FF6B35] text-white py-3 rounded-xl font-bold text-base sm:text-lg">
         Confirmar pedido
       </button>
     </div>
@@ -439,122 +565,122 @@
   <!-- CARRITO SIDEBAR -->
   <div id="cartOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50"></div>
   <div id="cartSidebar" class="fixed top-0 right-0 w-full max-w-md bg-white h-full shadow-2xl z-50 transform translate-x-full transition-transform duration-300">
-    <div class="p-6 h-full flex flex-col">
+    <div class="p-4 sm:p-6 h-full flex flex-col">
       <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold">🛒 Tu carrito</h2>
+        <h2 class="text-xl sm:text-2xl font-bold">🛒 Tu carrito</h2>
         <i class="fas fa-times text-2xl cursor-pointer" id="closeCart"></i>
       </div>
       <div id="cartItems" class="flex-1 overflow-y-auto"></div>
       <div class="border-t pt-4 mt-4">
-        <div class="flex justify-between text-xl font-bold mb-4">
+        <div class="flex justify-between text-lg sm:text-xl font-bold mb-4">
           <span>Total:</span>
           <span id="cartTotal">$0</span>
         </div>
-        <button id="checkoutBtn" class="w-full bg-[#FF6B35] text-white py-3 rounded-xl font-bold text-lg disabled:opacity-50" disabled>Finalizar compra</button>
+        <button id="checkoutBtn" class="w-full bg-[#FF6B35] text-white py-3 rounded-xl font-bold text-base sm:text-lg disabled:opacity-50" disabled>Finalizar compra</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL LOGIN ADMIN -->
-  <div id="adminLoginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] hidden">
-    <div class="bg-white rounded-3xl p-8 max-w-md w-full">
+  <div id="adminLoginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] hidden p-4">
+    <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full">
       <i class="fas fa-user-shield text-4xl text-[#FF6B35] block text-center mb-4"></i>
-      <h3 class="text-2xl font-bold text-center mb-6">Acceso Administrador</h3>
-      <input type="text" id="adminUser" placeholder="Usuario" value="admin" class="w-full border rounded-full px-4 py-3 mb-3">
-      <input type="password" id="adminPass" placeholder="Contraseña" class="w-full border rounded-full px-4 py-3 mb-6">
-      <button id="loginAdminBtn" class="w-full bg-[#2C3E50] text-white py-3 rounded-full font-bold">Ingresar</button>
-      <button id="closeAdminLogin" class="w-full text-gray-500 py-2 mt-2">Cancelar</button>
+      <h3 class="text-xl sm:text-2xl font-bold text-center mb-6">Acceso Administrador</h3>
+      <input type="text" id="adminUser" placeholder="Usuario" value="admin" class="w-full border rounded-full px-4 py-3 mb-3 text-sm sm:text-base">
+      <input type="password" id="adminPass" placeholder="Contraseña" class="w-full border rounded-full px-4 py-3 mb-6 text-sm sm:text-base">
+      <button id="loginAdminBtn" class="w-full bg-[#2C3E50] text-white py-3 rounded-full font-bold text-sm sm:text-base">Ingresar</button>
+      <button id="closeAdminLogin" class="w-full text-gray-500 py-2 mt-2 text-sm sm:text-base">Cancelar</button>
     </div>
   </div>
 
   <!-- MODAL AGREGAR/EDITAR PRODUCTO (SOLO SUBIR ARCHIVOS) -->
-  <div id="productModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70] hidden">
-    <div class="bg-white rounded-3xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-      <h3 class="text-2xl font-bold mb-6" id="modalTitle">Agregar Producto</h3>
+  <div id="productModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70] hidden p-4">
+    <div class="bg-white rounded-3xl p-4 sm:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto modal-content">
+      <h3 class="text-xl sm:text-2xl font-bold mb-6" id="modalTitle">Agregar Producto</h3>
       <form id="productForm">
         <input type="hidden" id="productId">
         <div class="mb-4">
-          <label class="block font-medium mb-2">Nombre del producto</label>
-          <input type="text" id="productName" required class="w-full border rounded-xl px-4 py-3">
+          <label class="block font-medium mb-2 text-sm sm:text-base">Nombre del producto</label>
+          <input type="text" id="productName" required class="w-full border rounded-xl px-4 py-3 text-sm sm:text-base">
         </div>
         <div class="mb-4">
-          <label class="block font-medium mb-2">Descripción</label>
-          <textarea id="productDescription" rows="3" class="w-full border rounded-xl px-4 py-3"></textarea>
+          <label class="block font-medium mb-2 text-sm sm:text-base">Descripción</label>
+          <textarea id="productDescription" rows="3" class="w-full border rounded-xl px-4 py-3 text-sm sm:text-base"></textarea>
         </div>
-        <div class="grid grid-cols-2 gap-4 mb-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <div>
-            <label class="block font-medium mb-2">Categoría</label>
-            <select id="productCategory" class="w-full border rounded-xl px-4 py-3"></select>
+            <label class="block font-medium mb-2 text-sm sm:text-base">Categoría</label>
+            <select id="productCategory" class="w-full border rounded-xl px-4 py-3 text-sm sm:text-base"></select>
           </div>
           <div>
-            <label class="block font-medium mb-2">Precio</label>
-            <input type="number" id="productPrice" required class="w-full border rounded-xl px-4 py-3">
+            <label class="block font-medium mb-2 text-sm sm:text-base">Precio</label>
+            <input type="number" id="productPrice" required class="w-full border rounded-xl px-4 py-3 text-sm sm:text-base">
           </div>
         </div>
         <div class="mb-4">
-          <label class="block font-medium mb-2">Stock inicial</label>
-          <input type="number" id="productStock" required class="w-full border rounded-xl px-4 py-3">
+          <label class="block font-medium mb-2 text-sm sm:text-base">Stock inicial</label>
+          <input type="number" id="productStock" required class="w-full border rounded-xl px-4 py-3 text-sm sm:text-base">
         </div>
         
         <!-- MÚLTIPLES IMÁGENES - SOLO SUBIR ARCHIVOS -->
         <div class="mb-4">
-          <label class="block font-medium mb-2">Imágenes del producto</label>
+          <label class="block font-medium mb-2 text-sm sm:text-base">Imágenes del producto</label>
           <div id="multiImageContainer" class="multi-image-gallery"></div>
           
           <div class="mt-3">
-            <input type="file" id="multiImageUpload" accept="image/*" multiple class="w-full border rounded-xl p-2">
+            <input type="file" id="multiImageUpload" accept="image/*" multiple class="w-full border rounded-xl p-2 text-sm sm:text-base">
             <p class="text-xs text-gray-500 mt-1">Puedes seleccionar múltiples imágenes</p>
           </div>
         </div>
 
-        <div class="flex gap-3">
-          <button type="submit" class="flex-1 bg-[#FF6B35] text-white py-3 rounded-xl font-bold">Guardar</button>
-          <button type="button" id="closeProductModal" class="flex-1 border py-3 rounded-xl">Cancelar</button>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <button type="submit" class="flex-1 bg-[#FF6B35] text-white py-3 rounded-xl font-bold text-sm sm:text-base">Guardar</button>
+          <button type="button" id="closeProductModal" class="flex-1 border py-3 rounded-xl text-sm sm:text-base">Cancelar</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- MODAL CALCULADORA -->
-  <div id="calcModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70] hidden">
-    <div class="bg-white rounded-3xl p-8 max-w-md w-full">
-      <h3 class="text-2xl font-bold mb-4">🧮 Calculadora de materiales</h3>
-      <p class="mb-4 text-gray-600">Calculá cuántas bolsas de cemento necesitas</p>
-      <input type="number" id="metrosCuadrados" placeholder="Metros cuadrados (m²)" class="w-full border rounded-xl px-4 py-3 mb-4">
-      <select id="tipoMaterial" class="w-full border rounded-xl px-4 py-3 mb-4">
+  <div id="calcModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70] hidden p-4">
+    <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full">
+      <h3 class="text-xl sm:text-2xl font-bold mb-4">🧮 Calculadora de materiales</h3>
+      <p class="mb-4 text-gray-600 text-sm sm:text-base">Calculá cuántas bolsas de cemento necesitas</p>
+      <input type="number" id="metrosCuadrados" placeholder="Metros cuadrados (m²)" class="w-full border rounded-xl px-4 py-3 mb-4 text-sm sm:text-base">
+      <select id="tipoMaterial" class="w-full border rounded-xl px-4 py-3 mb-4 text-sm sm:text-base">
         <option value="7">Cemento (7kg/m²)</option>
         <option value="10">Cemento albañilería (10kg/m²)</option>
       </select>
-      <div id="calcResult" class="text-xl font-bold text-center mb-4"></div>
-      <button id="closeCalc" class="w-full bg-[#2C3E50] text-white py-3 rounded-xl">Cerrar</button>
+      <div id="calcResult" class="text-lg sm:text-xl font-bold text-center mb-4"></div>
+      <button id="closeCalc" class="w-full bg-[#2C3E50] text-white py-3 rounded-xl text-sm sm:text-base">Cerrar</button>
     </div>
   </div>
 
   <!-- MODAL ÉXITO PEDIDO -->
-  <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[80] hidden">
-    <div class="bg-white rounded-3xl p-8 max-w-md w-full text-center">
-      <i class="fas fa-circle-check text-6xl text-green-500 mb-4"></i>
-      <h2 class="text-3xl font-black mb-2">¡Pedido confirmado!</h2>
-      <p class="text-sm text-gray-600 mb-2">Guardá este código para retirar o coordinar el envío</p>
-      <div class="text-5xl font-black bg-gray-100 py-4 rounded-2xl my-4" id="orderCode">4X2F</div>
-      <div id="orderSummary" class="text-left bg-gray-50 p-4 rounded-xl mb-4"></div>
-      <button id="whatsappShare" class="w-full bg-[#25D366] text-white py-3 rounded-xl font-bold mb-2"><i class="fab fa-whatsapp mr-2"></i>Compartir por WhatsApp</button>
-      <button id="closeSuccessModal" class="w-full bg-[#2C3E50] text-white py-3 rounded-xl font-bold">Seguir comprando</button>
+  <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[80] hidden p-4">
+    <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full text-center">
+      <i class="fas fa-circle-check text-5xl sm:text-6xl text-green-500 mb-4"></i>
+      <h2 class="text-2xl sm:text-3xl font-black mb-2">¡Pedido confirmado!</h2>
+      <p class="text-xs sm:text-sm text-gray-600 mb-2">Guardá este código para retirar o coordinar el envío</p>
+      <div class="text-4xl sm:text-5xl font-black bg-gray-100 py-4 rounded-2xl my-4" id="orderCode">4X2F</div>
+      <div id="orderSummary" class="text-left bg-gray-50 p-4 rounded-xl mb-4 text-sm sm:text-base"></div>
+      <button id="whatsappShare" class="w-full bg-[#25D366] text-white py-3 rounded-xl font-bold mb-2 text-sm sm:text-base"><i class="fab fa-whatsapp mr-2"></i>Compartir por WhatsApp</button>
+      <button id="closeSuccessModal" class="w-full bg-[#2C3E50] text-white py-3 rounded-xl font-bold text-sm sm:text-base">Seguir comprando</button>
     </div>
   </div>
 </div>
 
 <!-- FOOTER (SÓCALO) -->
 <footer class="footer">
-  <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
+  <div class="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
     <!-- Contacto -->
     <div>
-      <h4 class="font-bold text-lg mb-4">Contacto</h4>
-      <ul class="space-y-2">
+      <h4 class="font-bold text-base sm:text-lg mb-4">Contacto</h4>
+      <ul class="space-y-2 text-sm sm:text-base">
         <li>
           <a href="mailto:ferretero@elconstructor.com" class="text-gray-600 hover:text-[#FF6B35] flex items-center gap-2">
             <i class="fas fa-envelope"></i>
-            ferretero@elconstructor.com
+            <span class="break-all">ferretero@elconstructor.com</span>
           </a>
         </li>
         <li>
@@ -574,8 +700,8 @@
     
     <!-- Horarios -->
     <div>
-      <h4 class="font-bold text-lg mb-4">Horarios</h4>
-      <ul class="space-y-2 text-gray-600">
+      <h4 class="font-bold text-base sm:text-lg mb-4">Horarios</h4>
+      <ul class="space-y-2 text-gray-600 text-sm sm:text-base">
         <li>Lunes a Viernes: 8:00 - 18:00</li>
         <li>Sábados: 8:00 - 13:00</li>
         <li>Domingos: Cerrado</li>
@@ -584,8 +710,8 @@
     
     <!-- Enlaces rápidos -->
     <div>
-      <h4 class="font-bold text-lg mb-4">Enlaces</h4>
-      <ul class="space-y-2">
+      <h4 class="font-bold text-base sm:text-lg mb-4">Enlaces</h4>
+      <ul class="space-y-2 text-sm sm:text-base">
         <li><a href="#" class="text-gray-600 hover:text-[#FF6B35]">Términos y condiciones</a></li>
         <li><a href="#" class="text-gray-600 hover:text-[#FF6B35]">Política de privacidad</a></li>
         <li><a href="#" class="text-gray-600 hover:text-[#FF6B35]">Preguntas frecuentes</a></li>
@@ -594,13 +720,13 @@
     
     <!-- Diseñado por -->
     <div>
-      <h4 class="font-bold text-lg mb-4">Diseñado por</h4>
+      <h4 class="font-bold text-base sm:text-lg mb-4">Diseñado por</h4>
       <a href="mailto:gitpanzer@gmail.com?subject=Contacto%20por%20diseño%20web&body=Hola%2C%20me%20contacto%20desde%20la%20ferretería%20para%20consultar%20sobre%20el%20diseño..." 
-         class="inline-flex items-center gap-2 bg-[#FF6B35] text-white px-4 py-2 rounded-full hover:bg-[#2C3E50] transition">
+         class="inline-flex items-center gap-2 bg-[#FF6B35] text-white px-4 py-2 rounded-full hover:bg-[#2C3E50] transition text-sm sm:text-base">
         <i class="fas fa-code"></i>
         gitpanzer
       </a>
-      <p class="text-sm text-gray-500 mt-2">© 2024 Todos los derechos reservados</p>
+      <p class="text-xs sm:text-sm text-gray-500 mt-2">© 2024 Todos los derechos reservados</p>
     </div>
   </div>
 </footer>
@@ -734,6 +860,18 @@ verificarConexion();
     const appWrapper = document.getElementById('appWrapper');
     const productDetailModal = document.getElementById('productDetailModal');
     const checkoutModal = document.getElementById('checkoutModal');
+    const welcomeModal = document.getElementById('welcomeModal');
+    const closeWelcomeBtn = document.getElementById('closeWelcomeBtn');
+
+    // ==================== MODAL BIENVENIDA ====================
+    if (!localStorage.getItem('welcomeShown')) {
+        welcomeModal.classList.remove('hidden');
+        localStorage.setItem('welcomeShown', 'true');
+    }
+
+    closeWelcomeBtn.addEventListener('click', () => {
+        welcomeModal.classList.add('hidden');
+    });
 
     // ==================== FUNCIONES SUPABASE ====================
 
@@ -853,9 +991,9 @@ verificarConexion();
 
     // ==================== RENDER FUNCTIONS ====================
     function renderCategories() {
-        let html = '<button class="cat-btn px-6 py-2 rounded-full font-semibold bg-[#FF6B35] text-white" data-cat="todos">Todos</button>';
+        let html = '<button class="cat-btn px-4 sm:px-6 py-2 rounded-full font-semibold bg-[#FF6B35] text-white text-sm sm:text-base" data-cat="todos">Todos</button>';
         CATEGORIES.forEach(cat => {
-            html += `<button class="cat-btn px-6 py-2 rounded-full font-semibold border border-gray-300 hover:border-[#FF6B35]" data-cat="${cat}">${cat}</button>`;
+            html += `<button class="cat-btn px-4 sm:px-6 py-2 rounded-full font-semibold border border-gray-300 hover:border-[#FF6B35] text-sm sm:text-base" data-cat="${cat}">${cat}</button>`;
         });
         categoryGrid.innerHTML = html;
         document.querySelectorAll('.cat-btn').forEach(btn => {
@@ -884,17 +1022,17 @@ verificarConexion();
     function renderProducts(productList = products) {
         let html = '';
         productList.forEach(p => {
-            const stockUrgent = p.stock <= 5 && p.stock > 0 ? `<span class="badge-urgent"><i class="fas fa-exclamation-triangle"></i> ¡ÚLTIMAS ${p.stock}!</span>` : '';
+            const stockUrgent = p.stock <= 5 && p.stock > 0 ? `<span class="badge-urgent text-xs"><i class="fas fa-exclamation-triangle"></i> ¡ÚLTIMAS ${p.stock}!</span>` : '';
             const noStock = p.stock === 0 ? '<span class="bg-gray-500 text-white text-xs px-3 py-1 rounded-full">Sin stock</span>' : '';
             const mainImage = p.images && p.images.length > 0 ? p.images[0] : p.image;
             html += `
-                <div class="bg-white rounded-2xl p-3 shadow hover:shadow-xl transition cursor-pointer product-card" data-id="${p.id}">
-                    <div class="h-36 bg-cover bg-center rounded-xl mb-2 relative" style="background-image: url('${mainImage}')">
+                <div class="bg-white rounded-xl sm:rounded-2xl p-2 sm:p-3 shadow hover:shadow-xl transition cursor-pointer product-card" data-id="${p.id}">
+                    <div class="h-24 sm:h-36 bg-cover bg-center rounded-lg sm:rounded-xl mb-2 relative" style="background-image: url('${mainImage}')">
                         ${stockUrgent || noStock}
                     </div>
-                    <h4 class="font-bold text-sm">${p.name}</h4>
-                    <div class="text-[#FF6B35] font-black text-xl mt-1">$${p.price.toLocaleString()}</div>
-                    <button class="add-to-cart w-full mt-2 bg-[#2C3E50] text-white py-2 rounded-xl text-sm font-semibold disabled:opacity-50" ${p.stock === 0 ? 'disabled' : ''} data-id="${p.id}" onclick="event.stopPropagation()">
+                    <h4 class="font-bold text-xs sm:text-sm line-clamp-2">${p.name}</h4>
+                    <div class="text-[#FF6B35] font-black text-base sm:text-xl mt-1">$${p.price.toLocaleString()}</div>
+                    <button class="add-to-cart w-full mt-2 bg-[#2C3E50] text-white py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold disabled:opacity-50" ${p.stock === 0 ? 'disabled' : ''} data-id="${p.id}" onclick="event.stopPropagation()">
                         <i class="fas fa-cart-plus mr-1"></i> ${p.stock === 0 ? 'Sin stock' : 'Agregar'}
                     </button>
                 </div>
@@ -926,10 +1064,10 @@ verificarConexion();
         destacados.forEach(p => {
             const mainImage = p.images && p.images.length > 0 ? p.images[0] : p.image;
             html += `
-                <div class="bg-white rounded-xl p-2 shadow cursor-pointer" onclick="openProductDetail(${p.id})">
-                    <div class="h-20 bg-cover bg-center rounded-lg" style="background-image: url('${mainImage}')"></div>
-                    <div class="text-xs font-bold mt-1">${p.name}</div>
-                    <div class="text-[#FF6B35] font-bold">$${p.price.toLocaleString()}</div>
+                <div class="bg-white rounded-lg sm:rounded-xl p-2 shadow cursor-pointer" onclick="openProductDetail(${p.id})">
+                    <div class="h-16 sm:h-20 bg-cover bg-center rounded-lg" style="background-image: url('${mainImage}')"></div>
+                    <div class="text-xs font-bold mt-1 line-clamp-1">${p.name}</div>
+                    <div class="text-[#FF6B35] font-bold text-xs sm:text-sm">$${p.price.toLocaleString()}</div>
                 </div>
             `;
         });
@@ -954,7 +1092,7 @@ verificarConexion();
         
         let thumbnails = '';
         currentImages.forEach((img, index) => {
-            thumbnails += `<img src="${img}" class="w-16 h-16 object-cover rounded-lg cursor-pointer border-2 ${index === 0 ? 'border-[#FF6B35]' : 'border-transparent'}" onclick="changeMainImage(this.src, ${index})">`;
+            thumbnails += `<img src="${img}" class="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-lg cursor-pointer border-2 ${index === 0 ? 'border-[#FF6B35]' : 'border-transparent'}" onclick="changeMainImage(this.src, ${index})">`;
         });
         document.getElementById('thumbnailGallery').innerHTML = thumbnails;
 
@@ -996,12 +1134,12 @@ verificarConexion();
 
         let summaryHtml = '';
         cart.forEach(item => {
-            summaryHtml += `<div class="flex justify-between text-sm mb-2">
-                <span>${item.name} x${item.quantity}</span>
-                <span class="font-bold">$${(item.price * item.quantity).toLocaleString()}</span>
+            summaryHtml += `<div class="flex justify-between text-xs sm:text-sm mb-2">
+                <span class="truncate pr-2">${item.name} x${item.quantity}</span>
+                <span class="font-bold whitespace-nowrap">$${(item.price * item.quantity).toLocaleString()}</span>
             </div>`;
         });
-        summaryHtml += `<div class="flex justify-between font-bold pt-2 border-t">
+        summaryHtml += `<div class="flex justify-between font-bold pt-2 border-t text-sm sm:text-base">
             <span>Total:</span>
             <span>$${cart.reduce((acc, i) => acc + (i.price * i.quantity), 0).toLocaleString()}</span>
         </div>`;
@@ -1134,16 +1272,16 @@ verificarConexion();
                 cart.forEach(item => {
                     const mainImage = item.images && item.images.length > 0 ? item.images[0] : item.image;
                     html += `
-                        <div class="flex gap-3 mb-3 p-2 bg-gray-50 rounded-xl">
-                            <div class="w-16 h-16 bg-cover bg-center rounded-lg" style="background-image: url('${mainImage}')"></div>
-                            <div class="flex-1">
-                                <h5 class="font-bold text-sm">${item.name}</h5>
-                                <div class="text-[#FF6B35] font-bold">$${item.price.toLocaleString()}</div>
-                                <div class="flex items-center gap-2 mt-1">
-                                    <button class="decCart w-6 h-6 bg-gray-200 rounded-full" data-id="${item.id}">-</button>
-                                    <span class="font-bold">${item.quantity}</span>
-                                    <button class="incCart w-6 h-6 bg-gray-200 rounded-full" data-id="${item.id}">+</button>
-                                    <button class="delCart ml-auto text-red-500" data-id="${item.id}"><i class="fas fa-trash"></i></button>
+                        <div class="flex gap-2 sm:gap-3 mb-3 p-2 bg-gray-50 rounded-xl">
+                            <div class="w-12 h-12 sm:w-16 sm:h-16 bg-cover bg-center rounded-lg flex-shrink-0" style="background-image: url('${mainImage}')"></div>
+                            <div class="flex-1 min-w-0">
+                                <h5 class="font-bold text-xs sm:text-sm truncate">${item.name}</h5>
+                                <div class="text-[#FF6B35] font-bold text-xs sm:text-sm">$${item.price.toLocaleString()}</div>
+                                <div class="flex items-center gap-1 sm:gap-2 mt-1">
+                                    <button class="decCart w-5 h-5 sm:w-6 sm:h-6 bg-gray-200 rounded-full text-xs sm:text-sm" data-id="${item.id}">-</button>
+                                    <span class="font-bold text-xs sm:text-sm">${item.quantity}</span>
+                                    <button class="incCart w-5 h-5 sm:w-6 sm:h-6 bg-gray-200 rounded-full text-xs sm:text-sm" data-id="${item.id}">+</button>
+                                    <button class="delCart ml-auto text-red-500 text-xs sm:text-sm" data-id="${item.id}"><i class="fas fa-trash"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -1191,68 +1329,323 @@ verificarConexion();
         return Array(4).fill(0).map(() => chars[Math.floor(Math.random() * chars.length)]).join('');
     }
 
+    // ==================== FUNCIÓN PARA GENERAR PDF DE MÉTRICAS ====================
+    function generarPDFMetricas() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // Título
+        doc.setFontSize(20);
+        doc.setTextColor(255, 107, 53);
+        doc.text('Ferretería El Constructor', 105, 20, { align: 'center' });
+        
+        doc.setFontSize(16);
+        doc.setTextColor(0, 0, 0);
+        doc.text('Reporte de Métricas', 105, 30, { align: 'center' });
+        
+        doc.setFontSize(10);
+        doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 20, 40);
+        doc.text(`Hora: ${new Date().toLocaleTimeString()}`, 20, 45);
+        
+        // Calcular métricas del mes actual
+        const inicioMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+        const finMes = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+        
+        const pedidosMes = pedidos.filter(p => {
+            const fechaPedido = new Date(p.date);
+            return fechaPedido >= inicioMes && fechaPedido <= finMes && p.estado !== 'Entregado';
+        });
+        
+        const ventasMes = pedidosMes.reduce((acc, p) => acc + p.total, 0);
+        const totalPedidosMes = pedidosMes.length;
+        
+        // Producto más vendido
+        const productoMasVendido = [...products].sort((a,b) => b.sales - a.sales)[0];
+        
+        // Ventas por categoría
+        const ventasPorCategoria = {};
+        pedidosMes.forEach(pedido => {
+            pedido.items.forEach(item => {
+                if (!ventasPorCategoria[item.category]) {
+                    ventasPorCategoria[item.category] = 0;
+                }
+                ventasPorCategoria[item.category] += item.price * item.quantity;
+            });
+        });
+        
+        let yPos = 55;
+        
+        // Métricas principales
+        doc.setFontSize(12);
+        doc.setTextColor(44, 62, 80);
+        doc.text('📊 Métricas del Mes', 20, yPos);
+        yPos += 10;
+        
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Ventas del mes: $${ventasMes.toLocaleString()}`, 25, yPos);
+        yPos += 7;
+        doc.text(`Pedidos del mes: ${totalPedidosMes}`, 25, yPos);
+        yPos += 7;
+        doc.text(`Productos totales: ${products.length}`, 25, yPos);
+        yPos += 7;
+        doc.text(`Productos con stock bajo: ${products.filter(p => p.stock <= 5).length}`, 25, yPos);
+        yPos += 15;
+        
+        // Producto estrella
+        if (productoMasVendido) {
+            doc.setFontSize(12);
+            doc.setTextColor(44, 62, 80);
+            doc.text('🏆 Producto Estrella', 20, yPos);
+            yPos += 10;
+            
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            doc.text(`Nombre: ${productoMasVendido.name}`, 25, yPos);
+            yPos += 7;
+            doc.text(`Unidades vendidas: ${productoMasVendido.sales || 0}`, 25, yPos);
+            yPos += 7;
+            doc.text(`Precio: $${productoMasVendido.price.toLocaleString()}`, 25, yPos);
+            yPos += 15;
+        }
+        
+        // Ventas por categoría
+        doc.setFontSize(12);
+        doc.setTextColor(44, 62, 80);
+        doc.text('📈 Ventas por Categoría', 20, yPos);
+        yPos += 10;
+        
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        Object.entries(ventasPorCategoria).forEach(([cat, monto]) => {
+            if (yPos > 270) {
+                doc.addPage();
+                yPos = 20;
+            }
+            doc.text(`${cat}: $${monto.toLocaleString()}`, 25, yPos);
+            yPos += 7;
+        });
+        
+        // Guardar PDF
+        doc.save(`metricas_ferreteria_${new Date().toISOString().split('T')[0]}.pdf`);
+        showToast('PDF de métricas generado correctamente');
+    }
+
+    // ==================== FUNCIÓN PARA GENERAR PDF DE PEDIDOS DEL MES ====================
+    function generarPDFPedidosMes() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // Título
+        doc.setFontSize(20);
+        doc.setTextColor(255, 107, 53);
+        doc.text('Ferretería El Constructor', 105, 20, { align: 'center' });
+        
+        doc.setFontSize(16);
+        doc.setTextColor(0, 0, 0);
+        doc.text('Reporte de Pedidos del Mes', 105, 30, { align: 'center' });
+        
+        // Calcular mes actual
+        const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        const mesActual = meses[new Date().getMonth()];
+        const añoActual = new Date().getFullYear();
+        
+        doc.setFontSize(12);
+        doc.text(`${mesActual} ${añoActual}`, 105, 40, { align: 'center' });
+        
+        doc.setFontSize(10);
+        doc.text(`Fecha de generación: ${new Date().toLocaleDateString()}`, 20, 50);
+        doc.text(`Hora: ${new Date().toLocaleTimeString()}`, 20, 55);
+        
+        // Filtrar pedidos del mes actual
+        const inicioMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+        const finMes = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+        
+        const pedidosMes = pedidos.filter(p => {
+            const fechaPedido = new Date(p.date);
+            return fechaPedido >= inicioMes && fechaPedido <= finMes;
+        }).sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        const totalVentasMes = pedidosMes.reduce((acc, p) => acc + p.total, 0);
+        const totalPedidos = pedidosMes.length;
+        const pedidosEntregados = pedidosMes.filter(p => p.estado === 'Entregado').length;
+        const pedidosPendientes = pedidosMes.filter(p => p.estado !== 'Entregado').length;
+        
+        // Resumen
+        let yPos = 65;
+        doc.setFontSize(12);
+        doc.setTextColor(44, 62, 80);
+        doc.text('📊 Resumen del Mes', 20, yPos);
+        yPos += 10;
+        
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Total de pedidos: ${totalPedidos}`, 25, yPos);
+        yPos += 7;
+        doc.text(`Pedidos entregados: ${pedidosEntregados}`, 25, yPos);
+        yPos += 7;
+        doc.text(`Pedidos pendientes: ${pedidosPendientes}`, 25, yPos);
+        yPos += 7;
+        doc.text(`Ventas totales: $${totalVentasMes.toLocaleString()}`, 25, yPos);
+        yPos += 15;
+        
+        // Listado de pedidos
+        doc.setFontSize(12);
+        doc.setTextColor(44, 62, 80);
+        doc.text('📋 Detalle de Pedidos', 20, yPos);
+        yPos += 10;
+        
+        pedidosMes.forEach((pedido, index) => {
+            // Verificar si necesitamos nueva página
+            if (yPos > 250) {
+                doc.addPage();
+                yPos = 20;
+            }
+            
+            doc.setFontSize(11);
+            doc.setTextColor(255, 107, 53);
+            doc.text(`Pedido #${index + 1} - Código: ${pedido.code}`, 20, yPos);
+            yPos += 7;
+            
+            doc.setFontSize(9);
+            doc.setTextColor(0, 0, 0);
+            doc.text(`Cliente: ${pedido.cliente}`, 25, yPos);
+            yPos += 5;
+            doc.text(`Fecha: ${new Date(pedido.date).toLocaleDateString()}`, 25, yPos);
+            yPos += 5;
+            doc.text(`Estado: ${pedido.estado}`, 25, yPos);
+            yPos += 5;
+            doc.text(`Método de entrega: ${pedido.delivery?.method || 'N/A'}`, 25, yPos);
+            yPos += 5;
+            
+            if (pedido.delivery?.date) {
+                doc.text(`Fecha de retiro: ${pedido.delivery.date} ${pedido.delivery.time || ''}`, 25, yPos);
+                yPos += 5;
+            }
+            
+            doc.text('Productos:', 25, yPos);
+            yPos += 5;
+            
+            pedido.items.forEach(item => {
+                if (yPos > 270) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+                doc.text(`  • ${item.name} x${item.quantity} = $${(item.price * item.quantity).toLocaleString()}`, 30, yPos);
+                yPos += 5;
+            });
+            
+            doc.setFontSize(10);
+            doc.setTextColor(44, 62, 80);
+            doc.text(`Total del pedido: $${pedido.total.toLocaleString()}`, 25, yPos);
+            yPos += 5;
+            
+            // Línea separadora
+            doc.setDrawColor(200, 200, 200);
+            doc.line(20, yPos, 190, yPos);
+            yPos += 10;
+        });
+        
+        // Resumen final
+        if (yPos > 250) {
+            doc.addPage();
+            yPos = 20;
+        }
+        
+        doc.setFontSize(12);
+        doc.setTextColor(44, 62, 80);
+        doc.text('📈 Resumen Final', 20, yPos);
+        yPos += 10;
+        
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Total de pedidos en el mes: ${totalPedidos}`, 25, yPos);
+        yPos += 7;
+        doc.text(`Total ventas del mes: $${totalVentasMes.toLocaleString()}`, 25, yPos);
+        
+        // Guardar PDF
+        doc.save(`pedidos_${mesActual}_${añoActual}.pdf`);
+        showToast('PDF de pedidos generado correctamente');
+    }
+
     // ==================== ADMIN ====================
     function renderAdminSection(section) {
         activeAdminSection = section;
         let html = '';
 
         if (section === 'resumen') {
+            // Calcular métricas con pedidos no entregados
+            const pedidosActivos = pedidos.filter(p => p.estado !== 'Entregado');
+            const totalPedidosActivos = pedidosActivos.length;
+            const ventasHoy = pedidosActivos
+                .filter(p => new Date(p.date).toDateString() === new Date().toDateString())
+                .reduce((acc, p) => acc + p.total, 0);
             const totalProductos = products.length;
             const stockBajo = products.filter(p => p.stock <= 5).length;
-            const pedidosHoy = pedidos.filter(p => new Date(p.date).toDateString() === new Date().toDateString()).length;
-            const ventasHoy = pedidos.filter(p => new Date(p.date).toDateString() === new Date().toDateString())
-                                   .reduce((acc, p) => acc + p.total, 0);
 
             html = `
-                <h2 class="text-2xl font-bold mb-6">📊 Resumen del negocio</h2>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-blue-50 p-6 rounded-2xl">
-                        <i class="fas fa-boxes text-3xl text-blue-600 mb-2"></i>
-                        <div class="text-3xl font-black">${totalProductos}</div>
-                        <div class="text-gray-600">Productos totales</div>
+                <h2 class="text-xl sm:text-2xl font-bold mb-6">📊 Resumen del negocio</h2>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 mb-8">
+                    <div class="bg-blue-50 p-4 sm:p-6 rounded-2xl">
+                        <i class="fas fa-boxes text-2xl sm:text-3xl text-blue-600 mb-2"></i>
+                        <div class="text-xl sm:text-3xl font-black">${totalProductos}</div>
+                        <div class="text-xs sm:text-sm text-gray-600">Productos totales</div>
                     </div>
-                    <div class="bg-yellow-50 p-6 rounded-2xl">
-                        <i class="fas fa-exclamation-triangle text-3xl text-yellow-600 mb-2"></i>
-                        <div class="text-3xl font-black">${stockBajo}</div>
-                        <div class="text-gray-600">Stock bajo (≤5)</div>
+                    <div class="bg-yellow-50 p-4 sm:p-6 rounded-2xl">
+                        <i class="fas fa-exclamation-triangle text-2xl sm:text-3xl text-yellow-600 mb-2"></i>
+                        <div class="text-xl sm:text-3xl font-black">${stockBajo}</div>
+                        <div class="text-xs sm:text-sm text-gray-600">Stock bajo</div>
                     </div>
-                    <div class="bg-green-50 p-6 rounded-2xl">
-                        <i class="fas fa-shopping-bag text-3xl text-green-600 mb-2"></i>
-                        <div class="text-3xl font-black">${pedidosHoy}</div>
-                        <div class="text-gray-600">Pedidos hoy</div>
+                    <div class="bg-green-50 p-4 sm:p-6 rounded-2xl">
+                        <i class="fas fa-shopping-bag text-2xl sm:text-3xl text-green-600 mb-2"></i>
+                        <div class="text-xl sm:text-3xl font-black">${totalPedidosActivos}</div>
+                        <div class="text-xs sm:text-sm text-gray-600">Pedidos activos</div>
                     </div>
-                    <div class="bg-purple-50 p-6 rounded-2xl">
-                        <i class="fas fa-dollar-sign text-3xl text-purple-600 mb-2"></i>
-                        <div class="text-3xl font-black">$${ventasHoy.toLocaleString()}</div>
-                        <div class="text-gray-600">Ventas hoy</div>
+                    <div class="bg-purple-50 p-4 sm:p-6 rounded-2xl">
+                        <i class="fas fa-dollar-sign text-2xl sm:text-3xl text-purple-600 mb-2"></i>
+                        <div class="text-xl sm:text-3xl font-black">$${ventasHoy.toLocaleString()}</div>
+                        <div class="text-xs sm:text-sm text-gray-600">Ventas del día</div>
                     </div>
                 </div>
 
-                <h3 class="text-xl font-bold mb-4">⚠️ Alertas de stock bajo</h3>
-                <div class="bg-white rounded-2xl shadow overflow-hidden">
-                    <table class="w-full">
+                <h3 class="text-lg sm:text-xl font-bold mb-4">⚠️ Alertas de stock bajo</h3>
+                <div class="bg-white rounded-2xl shadow overflow-x-auto">
+                    <table class="w-full min-w-[500px]">
                         <thead class="bg-gray-50">
-                            <tr><th class="p-3 text-left">Producto</th><th class="p-3 text-left">Stock</th><th class="p-3 text-left">Acción</th></tr>
+                            <tr><th class="p-3 text-left text-xs sm:text-sm">Producto</th><th class="p-3 text-left text-xs sm:text-sm">Stock</th><th class="p-3 text-left text-xs sm:text-sm">Acción</th></tr>
                         </thead>
                         <tbody>
                             ${products.filter(p => p.stock <= 5).map(p => `
                                 <tr class="border-t">
-                                    <td class="p-3">${p.name}</td>
-                                    <td class="p-3"><span class="stock-low">${p.stock} unidades</span></td>
-                                    <td class="p-3"><button class="edit-stock-btn text-blue-600" data-id="${p.id}">Actualizar stock</button></td>
+                                    <td class="p-3 text-xs sm:text-sm">${p.name}</td>
+                                    <td class="p-3"><span class="stock-low text-xs sm:text-sm">${p.stock} unidades</span></td>
+                                    <td class="p-3"><button class="edit-stock-btn text-blue-600 text-xs sm:text-sm" data-id="${p.id}">Actualizar stock</button></td>
                                 </tr>
                             `).join('')}
+                            ${products.filter(p => p.stock <= 5).length === 0 ? `
+                                <tr>
+                                    <td colspan="3" class="p-4 text-center text-gray-500">No hay productos con stock bajo</td>
+                                </tr>
+                            ` : ''}
                         </tbody>
                     </table>
                 </div>
             `;
         } else if (section === 'metricas') {
-            const ventasTotales = pedidos.reduce((acc, p) => acc + p.total, 0);
-            const totalPedidos = pedidos.length;
-            const ticketPromedio = totalPedidos > 0 ? ventasTotales / totalPedidos : 0;
+            // Calcular métricas del mes actual
+            const inicioMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+            const finMes = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+            
+            const pedidosMes = pedidos.filter(p => {
+                const fechaPedido = new Date(p.date);
+                return fechaPedido >= inicioMes && fechaPedido <= finMes && p.estado !== 'Entregado';
+            });
+            
+            const ventasMes = pedidosMes.reduce((acc, p) => acc + p.total, 0);
+            const totalPedidosMes = pedidosMes.length;
             
             const ventasPorCategoria = {};
-            pedidos.forEach(pedido => {
+            pedidosMes.forEach(pedido => {
                 pedido.items.forEach(item => {
                     if (!ventasPorCategoria[item.category]) {
                         ventasPorCategoria[item.category] = 0;
@@ -1262,72 +1655,104 @@ verificarConexion();
             });
 
             const productoMasVendido = [...products].sort((a,b) => b.sales - a.sales)[0];
+            const categoriaMasVendida = Object.entries(ventasPorCategoria).sort((a,b) => b[1] - a[1])[0];
+            const ticketPromedio = totalPedidosMes > 0 ? ventasMes / totalPedidosMes : 0;
 
             html = `
-                <h2 class="text-2xl font-bold mb-6">📈 Métricas detalladas</h2>
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl sm:text-2xl font-bold">📈 Métricas del Mes</h2>
+                    <button id="generarPDFBtn" class="bg-[#FF6B35] text-white px-6 py-3 rounded-xl font-bold text-sm sm:text-base hover:bg-[#2C3E50] transition">
+                        <i class="fas fa-file-pdf mr-2"></i>Generar PDF
+                    </button>
+                </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="bg-green-50 p-6 rounded-2xl">
-                        <i class="fas fa-chart-line text-3xl text-green-600 mb-2"></i>
-                        <div class="text-3xl font-black">$${ventasTotales.toLocaleString()}</div>
-                        <div class="text-gray-600">Ventas totales</div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6 mb-8">
+                    <div class="bg-green-50 p-4 sm:p-6 rounded-2xl">
+                        <i class="fas fa-chart-line text-2xl sm:text-3xl text-green-600 mb-2"></i>
+                        <div class="text-lg sm:text-3xl font-black">$${ventasMes.toLocaleString()}</div>
+                        <div class="text-xs sm:text-sm text-gray-600">Ventas del mes</div>
                     </div>
-                    <div class="bg-blue-50 p-6 rounded-2xl">
-                        <i class="fas fa-receipt text-3xl text-blue-600 mb-2"></i>
-                        <div class="text-3xl font-black">${totalPedidos}</div>
-                        <div class="text-gray-600">Pedidos totales</div>
+                    <div class="bg-blue-50 p-4 sm:p-6 rounded-2xl">
+                        <i class="fas fa-receipt text-2xl sm:text-3xl text-blue-600 mb-2"></i>
+                        <div class="text-lg sm:text-3xl font-black">${totalPedidosMes}</div>
+                        <div class="text-xs sm:text-sm text-gray-600">Pedidos del mes</div>
                     </div>
-                    <div class="bg-purple-50 p-6 rounded-2xl">
-                        <i class="fas fa-calculator text-3xl text-purple-600 mb-2"></i>
-                        <div class="text-3xl font-black">$${ticketPromedio.toFixed(0).toLocaleString()}</div>
-                        <div class="text-gray-600">Ticket promedio</div>
+                    <div class="bg-purple-50 p-4 sm:p-6 rounded-2xl">
+                        <i class="fas fa-tag text-2xl sm:text-3xl text-purple-600 mb-2"></i>
+                        <div class="text-lg sm:text-3xl font-black">$${ticketPromedio.toFixed(0).toLocaleString()}</div>
+                        <div class="text-xs sm:text-sm text-gray-600">Ticket promedio</div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div class="bg-white rounded-2xl shadow p-6">
-                        <h3 class="text-lg font-bold mb-4">🏆 Producto estrella</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8">
+                    <div class="bg-white rounded-2xl shadow p-4 sm:p-6">
+                        <h3 class="text-base sm:text-lg font-bold mb-4">🏆 Producto estrella</h3>
                         ${productoMasVendido ? `
                             <div class="flex items-center gap-4">
-                                <img src="${productoMasVendido.image}" class="w-20 h-20 rounded-xl object-cover">
+                                <img src="${productoMasVendido.image}" class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover">
                                 <div>
-                                    <div class="font-bold">${productoMasVendido.name}</div>
-                                    <div class="text-[#FF6B35] font-bold">$${productoMasVendido.price.toLocaleString()}</div>
-                                    <div class="text-sm text-gray-600">${productoMasVendido.sales || 0} unidades vendidas</div>
+                                    <div class="font-bold text-sm sm:text-base">${productoMasVendido.name}</div>
+                                    <div class="text-[#FF6B35] font-bold text-sm sm:text-base">$${productoMasVendido.price.toLocaleString()}</div>
+                                    <div class="text-xs sm:text-sm text-gray-600">${productoMasVendido.sales || 0} unidades vendidas</div>
                                 </div>
                             </div>
                         ` : '<p class="text-gray-500">Sin datos</p>'}
                     </div>
 
-                    <div class="bg-white rounded-2xl shadow p-6">
-                        <h3 class="text-lg font-bold mb-4">📊 Ventas por categoría</h3>
+                    <div class="bg-white rounded-2xl shadow p-4 sm:p-6">
+                        <h3 class="text-base sm:text-lg font-bold mb-4">📊 Ventas por categoría</h3>
                         ${Object.entries(ventasPorCategoria).map(([cat, monto]) => `
-                            <div class="flex justify-between mb-2">
+                            <div class="flex justify-between mb-2 text-xs sm:text-sm">
                                 <span>${cat}</span>
                                 <span class="font-bold">$${monto.toLocaleString()}</span>
                             </div>
                         `).join('')}
+                        ${Object.keys(ventasPorCategoria).length === 0 ? `
+                            <p class="text-gray-500 text-center">No hay ventas en el mes</p>
+                        ` : ''}
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow p-4 sm:p-6">
+                    <h3 class="text-base sm:text-lg font-bold mb-4">📦 Resumen de inventario</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div>
+                            <div class="text-2xl font-black text-blue-600">${products.length}</div>
+                            <div class="text-xs sm:text-sm text-gray-600">Productos totales</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-black text-yellow-600">${products.filter(p => p.stock <= 5).length}</div>
+                            <div class="text-xs sm:text-sm text-gray-600">Stock bajo</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-black text-green-600">${products.reduce((acc, p) => acc + (p.sales || 0), 0)}</div>
+                            <div class="text-xs sm:text-sm text-gray-600">Unidades vendidas</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-black text-purple-600">${categoriaMasVendida ? categoriaMasVendida[0] : 'N/A'}</div>
+                            <div class="text-xs sm:text-sm text-gray-600">Categoría top</div>
+                        </div>
                     </div>
                 </div>
             `;
         } else if (section === 'productos') {
             html = `
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold">📦 Gestión de Productos</h2>
-                    <button id="addProductBtn" class="bg-[#FF6B35] text-white px-6 py-3 rounded-xl font-bold">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <h2 class="text-xl sm:text-2xl font-bold">📦 Gestión de Productos</h2>
+                    <button id="addProductBtn" class="bg-[#FF6B35] text-white px-6 py-3 rounded-xl font-bold text-sm sm:text-base">
                         <i class="fas fa-plus mr-2"></i>Agregar Producto
                     </button>
                 </div>
-                <div class="bg-white rounded-2xl shadow overflow-hidden">
-                    <table class="w-full">
+                <div class="bg-white rounded-2xl shadow overflow-x-auto">
+                    <table class="w-full min-w-[800px]">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="p-3 text-left">Imagen</th>
-                                <th class="p-3 text-left">Producto</th>
-                                <th class="p-3 text-left">Categoría</th>
-                                <th class="p-3 text-left">Stock</th>
-                                <th class="p-3 text-left">Precio</th>
-                                <th class="p-3 text-left">Acciones</th>
+                                <th class="p-3 text-left text-xs sm:text-sm">Imagen</th>
+                                <th class="p-3 text-left text-xs sm:text-sm">Producto</th>
+                                <th class="p-3 text-left text-xs sm:text-sm">Categoría</th>
+                                <th class="p-3 text-left text-xs sm:text-sm">Stock</th>
+                                <th class="p-3 text-left text-xs sm:text-sm">Precio</th>
+                                <th class="p-3 text-left text-xs sm:text-sm">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1335,14 +1760,14 @@ verificarConexion();
                                 const mainImage = p.images && p.images.length > 0 ? p.images[0] : p.image;
                                 return `
                                 <tr class="border-t">
-                                    <td class="p-3"><img src="${mainImage}" class="product-thumb"></td>
-                                    <td class="p-3 font-bold">${p.name}</td>
-                                    <td class="p-3">${p.category}</td>
-                                    <td class="p-3"><span class="${p.stock <= 5 ? 'stock-low' : ''}">${p.stock}</span></td>
-                                    <td class="p-3">$${p.price.toLocaleString()}</td>
+                                    <td class="p-3"><img src="${mainImage}" class="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded-lg"></td>
+                                    <td class="p-3 font-bold text-xs sm:text-sm">${p.name}</td>
+                                    <td class="p-3 text-xs sm:text-sm">${p.category}</td>
+                                    <td class="p-3"><span class="${p.stock <= 5 ? 'stock-low' : ''} text-xs sm:text-sm">${p.stock}</span></td>
+                                    <td class="p-3 text-xs sm:text-sm">$${p.price.toLocaleString()}</td>
                                     <td class="p-3">
-                                        <button class="edit-product text-blue-600 mr-2" data-id="${p.id}"><i class="fas fa-edit"></i></button>
-                                        <button class="delete-product text-red-600" data-id="${p.id}"><i class="fas fa-trash"></i></button>
+                                        <button class="edit-product text-blue-600 mr-2 text-xs sm:text-sm" data-id="${p.id}"><i class="fas fa-edit"></i></button>
+                                        <button class="delete-product text-red-600 text-xs sm:text-sm" data-id="${p.id}"><i class="fas fa-trash"></i></button>
                                     </td>
                                 </tr>
                             `}).join('')}
@@ -1351,44 +1776,63 @@ verificarConexion();
                 </div>
             `;
         } else if (section === 'pedidos') {
-            const pedidosHoy = pedidos.filter(p => new Date(p.date).toDateString() === new Date().toDateString());
+            // Mostrar solo pedidos activos (no entregados) del día
+            const pedidosActivosHoy = pedidos.filter(p => 
+                p.estado !== 'Entregado' && 
+                new Date(p.date).toDateString() === new Date().toDateString()
+            );
+            
             html = `
-                <h2 class="text-2xl font-bold mb-6">📋 Pedidos del día</h2>
-                <div class="bg-white rounded-2xl shadow overflow-hidden">
-                    <table class="w-full">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl sm:text-2xl font-bold">📋 Pedidos activos del día</h2>
+                    <button id="generarPDFPedidosBtn" class="bg-[#FF6B35] text-white px-6 py-3 rounded-xl font-bold text-sm sm:text-base hover:bg-[#2C3E50] transition">
+                        <i class="fas fa-file-pdf mr-2"></i>Reporte Mensual PDF
+                    </button>
+                </div>
+                <div class="bg-white rounded-2xl shadow overflow-x-auto">
+                    <table class="w-full min-w-[900px]">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="p-3 text-left">Código</th>
-                                <th class="p-3 text-left">Cliente</th>
-                                <th class="p-3 text-left">Total</th>
-                                <th class="p-3 text-left">Estado</th>
-                                <th class="p-3 text-left">Entrega</th>
-                                <th class="p-3 text-left">Horario</th>
-                                <th class="p-3 text-left">Acción</th>
+                                <th class="p-3 text-left text-xs sm:text-sm">Código</th>
+                                <th class="p-3 text-left text-xs sm:text-sm">Cliente</th>
+                                <th class="p-3 text-left text-xs sm:text-sm">Total</th>
+                                <th class="p-3 text-left text-xs sm:text-sm">Estado</th>
+                                <th class="p-3 text-left text-xs sm:text-sm">Entrega</th>
+                                <th class="p-3 text-left text-xs sm:text-sm">Fecha retiro</th>
+                                <th class="p-3 text-left text-xs sm:text-sm">Hora retiro</th>
+                                <th class="p-3 text-left text-xs sm:text-sm">Acción</th>
                             </tr>
                         </thead>
                         <tbody>
-                            ${pedidosHoy.map(p => `
+                            ${pedidosActivosHoy.map(p => `
                                 <tr class="border-t">
-                                    <td class="p-3 font-mono font-bold">${p.code}</td>
-                                    <td class="p-3">${p.cliente}</td>
-                                    <td class="p-3">$${p.total.toLocaleString()}</td>
+                                    <td class="p-3 font-mono font-bold text-xs sm:text-sm">${p.code}</td>
+                                    <td class="p-3 text-xs sm:text-sm">${p.cliente}</td>
+                                    <td class="p-3 text-xs sm:text-sm">$${p.total.toLocaleString()}</td>
                                     <td class="p-3">
-                                        <select class="estado-select border rounded-lg px-2 py-1" data-code="${p.code}">
+                                        <select class="estado-select border rounded-lg px-2 py-1 text-xs sm:text-sm" data-code="${p.code}">
                                             <option ${p.estado === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
                                             <option ${p.estado === 'En preparación' ? 'selected' : ''}>En preparación</option>
                                             <option ${p.estado === 'Entregado' ? 'selected' : ''}>Entregado</option>
                                         </select>
                                     </td>
-                                    <td class="p-3">${p.delivery?.method || 'N/A'}</td>
-                                    <td class="p-3">${p.delivery?.date || new Date(p.date).toLocaleTimeString()}</td>
+                                    <td class="p-3 text-xs sm:text-sm">${p.delivery?.method || 'N/A'}</td>
+                                    <td class="p-3 text-xs sm:text-sm">${p.delivery?.date || '-'}</td>
+                                    <td class="p-3 text-xs sm:text-sm">${p.delivery?.time || '-'}</td>
                                     <td class="p-3">
-                                        <button class="complete-order bg-green-500 text-white px-3 py-1 rounded-lg text-sm" data-code="${p.code}">
+                                        <button class="complete-order bg-green-500 text-white px-3 py-1 rounded-lg text-xs sm:text-sm" data-code="${p.code}">
                                             <i class="fas fa-check"></i> Completar
                                         </button>
                                     </td>
                                 </tr>
                             `).join('')}
+                            ${pedidosActivosHoy.length === 0 ? `
+                                <tr>
+                                    <td colspan="8" class="p-8 text-center text-gray-500">
+                                        No hay pedidos activos por hoy
+                                    </td>
+                                </tr>
+                            ` : ''}
                         </tbody>
                     </table>
                 </div>
@@ -1408,6 +1852,8 @@ verificarConexion();
         }
 
         if (section === 'pedidos') {
+            document.getElementById('generarPDFPedidosBtn')?.addEventListener('click', generarPDFPedidosMes);
+            
             document.querySelectorAll('.estado-select').forEach(select => {
                 select.addEventListener('change', (e) => {
                     const code = select.dataset.code;
@@ -1428,10 +1874,14 @@ verificarConexion();
                         pedido.estado = 'Entregado';
                         saveToLocalStorage();
                         renderAdminSection('pedidos');
-                        showToast('Pedido completado');
+                        showToast('Pedido completado y archivado');
                     }
                 });
             });
+        }
+
+        if (section === 'metricas') {
+            document.getElementById('generarPDFBtn')?.addEventListener('click', generarPDFMetricas);
         }
     }
 
@@ -1638,8 +2088,8 @@ verificarConexion();
                     const mainImage = p.images && p.images.length > 0 ? p.images[0] : p.image;
                     return `
                     <div class="p-2 hover:bg-gray-100 cursor-pointer flex items-center gap-2" onclick="openProductDetail(${p.id})">
-                        <img src="${mainImage}" class="w-8 h-8 rounded object-cover">
-                        <span>${p.name}</span>
+                        <img src="${mainImage}" class="w-6 h-6 sm:w-8 sm:h-8 rounded object-cover">
+                        <span class="text-xs sm:text-sm">${p.name}</span>
                     </div>
                 `}).join('');
             } else {
