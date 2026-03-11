@@ -233,46 +233,265 @@
       transform: scale(1.02);
     }
     
-    /* Mejoras responsive adicionales */
+    /* ========== MEJORAS RESPONSIVE PARA MÓVIL ========== */
     @media (max-width: 640px) {
+      /* Header */
       .header {
-        flex-wrap: wrap;
-        padding: 0.75rem;
+        padding: 0.5rem;
+        gap: 0.25rem;
       }
+      
+      /* Logo más pequeño en móvil */
+      .header .text-xl {
+        font-size: 1rem;
+      }
+      
+      /* Botón admin más pequeño */
+      .header .border {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.7rem;
+      }
+      
+      /* Búsqueda móvil */
+      .mobile-search {
+        display: block;
+        width: 100%;
+        margin-top: 0.5rem;
+        order: 3;
+      }
+      
+      /* Grid de productos más compacto */
       .product-grid {
         grid-template-columns: repeat(2, 1fr) !important;
-        gap: 0.75rem;
-      }
-      .category-grid {
         gap: 0.5rem;
       }
+      
+      /* Tarjetas de producto en móvil */
+      .product-card {
+        padding: 0.5rem !important;
+      }
+      
+      .product-card .h-24 {
+        height: 80px !important;
+      }
+      
+      .product-card .text-base {
+        font-size: 0.9rem !important;
+      }
+      
+      .product-card .text-sm {
+        font-size: 0.7rem !important;
+      }
+      
+      /* Categorías scroll horizontal */
+      .category-grid {
+        display: flex;
+        gap: 0.5rem;
+        padding-bottom: 0.5rem;
+        -webkit-overflow-scrolling: touch;
+      }
+      
       .cat-btn {
-        padding: 0.5rem 1rem;
-        font-size: 0.8rem;
+        padding: 0.4rem 1rem !important;
+        font-size: 0.75rem !important;
         white-space: nowrap;
       }
-      .footer .grid {
-        gap: 1.5rem;
+      
+      /* Filtros en columna */
+      #minPrice, #maxPrice, #categoryFilter {
+        width: 100% !important;
       }
-      .modal-content {
-        margin: 1rem;
-        padding: 1rem;
+      
+      /* Búsqueda global visible en móvil */
+      #globalSearch {
+        display: none;
       }
-      .cart-sidebar {
-        max-width: 100%;
+      
+      .mobile-search-input {
+        display: block;
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 2rem;
+        font-size: 0.9rem;
       }
+      
+      /* Sidebar admin full width en móvil */
       .admin-sidebar {
         position: fixed;
-        z-index: 50;
-        width: 250px;
+        top: 0;
+        left: 0;
+        width: 85%;
+        max-width: 300px;
+        height: 100vh;
+        z-index: 1000;
         transform: translateX(-100%);
         transition: transform 0.3s ease;
+        overflow-y: auto;
       }
+      
       .admin-sidebar.open {
         transform: translateX(0);
       }
-      .main-content {
+      
+      /* Botón menú hamburguesa para admin */
+      .admin-menu-toggle {
+        display: block;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: var(--orange);
+        color: white;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        z-index: 1001;
+        cursor: pointer;
+      }
+      
+      /* Modal contenido con padding reducido */
+      .modal-content {
+        padding: 1rem !important;
+        margin: 0.5rem !important;
+      }
+      
+      /* Checkout móvil */
+      #checkoutModal .max-w-md {
+        margin: 0.5rem;
         padding: 1rem;
+      }
+      
+      /* Carrito sidebar ocupa toda la pantalla */
+      #cartSidebar {
+        max-width: 100%;
+      }
+      
+      /* Footer en columna */
+      .footer .grid {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem;
+      }
+      
+      /* Tablas con scroll horizontal */
+      .overflow-x-auto {
+        -webkit-overflow-scrolling: touch;
+      }
+      
+      /* Ajustes de tipografía */
+      h2.text-xl {
+        font-size: 1.2rem;
+      }
+      
+      .text-2xl {
+        font-size: 1.3rem;
+      }
+      
+      /* Zoom modal controles más accesibles */
+      #zoomModal button {
+        font-size: 1.5rem;
+        padding: 0.5rem;
+      }
+      
+      /* Thumbnails más pequeños */
+      .product-detail-thumbnails {
+        gap: 0.25rem;
+      }
+      
+      .product-detail-thumbnails img {
+        width: 40px;
+        height: 40px;
+      }
+      
+      /* Ajustes para imágenes en galería */
+      .multi-image-gallery {
+        gap: 0.25rem;
+      }
+      
+      /* Botones táctiles más grandes */
+      button, .clickable-image {
+        min-height: 44px;
+        min-width: 44px;
+      }
+      
+      /* Espaciado en formularios */
+      input, select, textarea {
+        font-size: 16px !important; /* Previene zoom en iOS */
+        padding: 0.75rem !important;
+      }
+      
+      /* Tablas responsivas en admin */
+      table {
+        min-width: 600px;
+      }
+      
+      td, th {
+        padding: 0.5rem !important;
+        font-size: 0.75rem !important;
+      }
+      
+      /* Tarjetas de métricas */
+      .grid.grid-cols-2 {
+        gap: 0.5rem;
+      }
+      
+      .p-6 {
+        padding: 1rem !important;
+      }
+      
+      /* Welcome modal */
+      #welcomeModal .max-w-lg {
+        margin: 1rem;
+        padding: 1.5rem;
+      }
+      
+      #welcomeModal h2 {
+        font-size: 1.5rem;
+      }
+      
+      /* Botón flotante de admin en móvil */
+      .admin-float-btn {
+        display: flex;
+      }
+      
+      /* Offline banner */
+      .offline-banner {
+        font-size: 0.8rem;
+        padding: 0.3rem;
+      }
+      
+      /* Resultados predictivos */
+      #predictiveResults {
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: auto;
+        bottom: 0;
+        max-height: 50vh;
+        border-radius: 20px 20px 0 0;
+        z-index: 2000;
+      }
+    }
+    
+    /* Estilos para mostrar/ocultar elementos según dispositivo */
+    @media (min-width: 641px) {
+      .mobile-only {
+        display: none !important;
+      }
+      .mobile-search {
+        display: none;
+      }
+      .admin-menu-toggle {
+        display: none;
+      }
+    }
+    
+    @media (max-width: 640px) {
+      .desktop-only {
+        display: none !important;
       }
     }
     
@@ -287,12 +506,6 @@
     .admin-sidebar {
       transition: transform 0.3s ease;
     }
-    .admin-sidebar.hidden {
-      display: none;
-    }
-    .admin-sidebar.mobile-open {
-      transform: translateX(0);
-    }
     
     /* Modal responsive */
     .modal-content {
@@ -306,6 +519,13 @@
     }
     button, a {
       -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Animaciones suaves en móvil */
+    @media (max-width: 640px) {
+      * {
+        transition: all 0.2s ease;
+      }
     }
   </style>
 </head>
@@ -367,15 +587,24 @@
     <div class="flex items-center gap-2 sm:gap-4">
       <div class="text-xl sm:text-2xl font-black text-[#2C3E50]">
         <i class="fas fa-tools text-[#FF6B35] mr-2"></i>
-        <span class="hidden xs:inline">El Constructor</span>
-        <span class="xs:hidden">El Constructor - Ferreteria</span>
+        <span class="hidden xs:inline desktop-only">El Constructor</span>
+        <span class="mobile-only">Ferretería</span>
       </div>
-      <div class="relative hidden md:block">
+      <div class="relative hidden md:block desktop-only">
         <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
         <input type="text" id="globalSearch" placeholder="Buscar productos..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-full w-64 lg:w-80 focus:outline-none focus:border-[#FF6B35]">
         <div id="predictiveResults" class="absolute top-full left-0 right-0 bg-white shadow-lg rounded-xl mt-1 max-h-80 overflow-y-auto hidden"></div>
       </div>
     </div>
+    
+    <!-- Búsqueda móvil -->
+    <div class="mobile-search w-full mt-2 mobile-only">
+      <div class="relative">
+        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+        <input type="text" id="mobileSearch" placeholder="Buscar productos..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:border-[#FF6B35] mobile-search-input">
+      </div>
+    </div>
+    
     <div class="flex items-center gap-2 sm:gap-4">
       <button id="darkModeToggle" class="p-2 rounded-full hover:bg-gray-100 text-sm sm:text-base">
         <i class="fas fa-moon"></i>
@@ -386,7 +615,8 @@
       </div>
       <button class="border border-[#2C3E50] px-3 sm:px-5 py-1.5 sm:py-2 rounded-full text-sm sm:text-base font-semibold hover:bg-[#2C3E50] hover:text-white transition" id="adminLockBtn">
         <i class="fas fa-lock mr-1 sm:mr-2"></i>
-        <span class="hidden xs:inline">Admin</span>
+        <span class="hidden xs:inline desktop-only">Admin</span>
+        <span class="mobile-only">🔐</span>
       </button>
     </div>
   </header>
@@ -407,6 +637,11 @@
         <a href="#" id="logoutAdmin"><i class="fas fa-sign-out-alt w-6"></i> Cerrar sesión</a>
       </nav>
     </div>
+    
+    <!-- Botón menú admin móvil -->
+    <div id="adminMenuToggle" class="admin-menu-toggle hidden">
+      <i class="fas fa-bars"></i>
+    </div>
 
     <!-- CONTENIDO PRINCIPAL (CLIENTE o ADMIN) -->
     <main id="mainContent" class="flex-1 p-4 sm:p-6 main-content">
@@ -415,16 +650,18 @@
         <!-- CATEGORÍAS -->
         <div class="mb-6 sm:mb-8">
           <h2 class="text-xl sm:text-2xl font-bold text-[#2C3E50] mb-4"><i class="fas fa-th-large text-[#FF6B35] mr-2"></i>Categorías</h2>
-          <div class="flex gap-2 sm:gap-3 overflow-x-auto pb-2 category-grid" id="categoryGrid"></div>
+          <div class="flex gap-2 sm:gap-3 overflow-x-auto pb-2 category-grid scrollable" id="categoryGrid"></div>
         </div>
 
-        <!-- FILTROS AVANZADOS -->
-        <div class="bg-gray-50 p-4 rounded-xl mb-6 flex flex-wrap gap-3 sm:gap-4 items-center">
+        <!-- FILTROS AVANZADOS (responsive) -->
+        <div class="bg-gray-50 p-4 rounded-xl mb-6 flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center">
           <select id="categoryFilter" class="border rounded-lg px-3 sm:px-4 py-2 text-sm sm:text-base w-full sm:w-auto">
             <option value="">Todas las categorías</option>
           </select>
-          <input type="number" id="minPrice" placeholder="Precio mínimo" class="border rounded-lg px-3 sm:px-4 py-2 w-28 sm:w-32 text-sm sm:text-base">
-          <input type="number" id="maxPrice" placeholder="Precio máximo" class="border rounded-lg px-3 sm:px-4 py-2 w-28 sm:w-32 text-sm sm:text-base">
+          <div class="flex gap-2 w-full sm:w-auto">
+            <input type="number" id="minPrice" placeholder="Mín" class="border rounded-lg px-3 sm:px-4 py-2 w-1/2 sm:w-28 text-sm sm:text-base">
+            <input type="number" id="maxPrice" placeholder="Máx" class="border rounded-lg px-3 sm:px-4 py-2 w-1/2 sm:w-28 text-sm sm:text-base">
+          </div>
           <button id="applyFilters" class="bg-[#FF6B35] text-white px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto">Filtrar</button>
         </div>
 
@@ -464,7 +701,7 @@
         <!-- Carrusel de imágenes con zoom -->
         <div>
           <div id="mainImageContainer" class="h-48 sm:h-64 bg-cover bg-center rounded-xl mb-2 clickable-image" style="background-image: url('')" onclick="openZoomModal(currentImages, currentImageIndex)"></div>
-          <div id="thumbnailGallery" class="flex gap-2 overflow-x-auto"></div>
+          <div id="thumbnailGallery" class="flex gap-2 overflow-x-auto product-detail-thumbnails"></div>
           <p class="text-xs text-gray-500 mt-2 text-center">Hacé clic en la imagen para ver en pantalla completa con zoom</p>
         </div>
         <!-- Detalles (sin stock) -->
@@ -854,6 +1091,7 @@ verificarConexion();
     const cartTotal = document.getElementById('cartTotal');
     const checkoutBtn = document.getElementById('checkoutBtn');
     const globalSearch = document.getElementById('globalSearch');
+    const mobileSearch = document.getElementById('mobileSearch');
     const predictiveResults = document.getElementById('predictiveResults');
     const destacadosGrid = document.getElementById('destacadosGrid');
     const darkModeToggle = document.getElementById('darkModeToggle');
@@ -862,6 +1100,7 @@ verificarConexion();
     const checkoutModal = document.getElementById('checkoutModal');
     const welcomeModal = document.getElementById('welcomeModal');
     const closeWelcomeBtn = document.getElementById('closeWelcomeBtn');
+    const adminMenuToggle = document.getElementById('adminMenuToggle');
 
     // ==================== MODAL BIENVENIDA ====================
     if (!localStorage.getItem('welcomeShown')) {
@@ -1659,9 +1898,9 @@ verificarConexion();
             const ticketPromedio = totalPedidosMes > 0 ? ventasMes / totalPedidosMes : 0;
 
             html = `
-                <div class="flex justify-between items-center mb-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <h2 class="text-xl sm:text-2xl font-bold">📈 Métricas del Mes</h2>
-                    <button id="generarPDFBtn" class="bg-[#FF6B35] text-white px-6 py-3 rounded-xl font-bold text-sm sm:text-base hover:bg-[#2C3E50] transition">
+                    <button id="generarPDFBtn" class="bg-[#FF6B35] text-white px-6 py-3 rounded-xl font-bold text-sm sm:text-base hover:bg-[#2C3E50] transition w-full sm:w-auto">
                         <i class="fas fa-file-pdf mr-2"></i>Generar PDF
                     </button>
                 </div>
@@ -1739,7 +1978,7 @@ verificarConexion();
             html = `
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <h2 class="text-xl sm:text-2xl font-bold">📦 Gestión de Productos</h2>
-                    <button id="addProductBtn" class="bg-[#FF6B35] text-white px-6 py-3 rounded-xl font-bold text-sm sm:text-base">
+                    <button id="addProductBtn" class="bg-[#FF6B35] text-white px-6 py-3 rounded-xl font-bold text-sm sm:text-base w-full sm:w-auto">
                         <i class="fas fa-plus mr-2"></i>Agregar Producto
                     </button>
                 </div>
@@ -1783,9 +2022,9 @@ verificarConexion();
             );
             
             html = `
-                <div class="flex justify-between items-center mb-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <h2 class="text-xl sm:text-2xl font-bold">📋 Pedidos activos del día</h2>
-                    <button id="generarPDFPedidosBtn" class="bg-[#FF6B35] text-white px-6 py-3 rounded-xl font-bold text-sm sm:text-base hover:bg-[#2C3E50] transition">
+                    <button id="generarPDFPedidosBtn" class="bg-[#FF6B35] text-white px-6 py-3 rounded-xl font-bold text-sm sm:text-base hover:bg-[#2C3E50] transition w-full sm:w-auto">
                         <i class="fas fa-file-pdf mr-2"></i>Reporte Mensual PDF
                     </button>
                 </div>
@@ -1966,15 +2205,69 @@ verificarConexion();
         }
     }
 
+    // ==================== FUNCIONES PARA MÓVIL ====================
+    function setupMobileFeatures() {
+        // Menú hamburguesa para admin
+        if (adminMenuToggle) {
+            adminMenuToggle.addEventListener('click', () => {
+                adminSidebar.classList.toggle('open');
+            });
+        }
+
+        // Cerrar sidebar al hacer clic fuera
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 640) {
+                if (!adminSidebar.contains(e.target) && !adminMenuToggle?.contains(e.target)) {
+                    adminSidebar.classList.remove('open');
+                }
+            }
+        });
+
+        // Búsqueda móvil
+        if (mobileSearch) {
+            mobileSearch.addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                if (term.length < 2) {
+                    predictiveResults.classList.add('hidden');
+                    return;
+                }
+                const results = products.filter(p => p.name.toLowerCase().includes(term)).slice(0, 5);
+                if (results.length) {
+                    predictiveResults.classList.remove('hidden');
+                    predictiveResults.innerHTML = results.map(p => {
+                        const mainImage = p.images && p.images.length > 0 ? p.images[0] : p.image;
+                        return `
+                        <div class="p-2 hover:bg-gray-100 cursor-pointer flex items-center gap-2" onclick="openProductDetail(${p.id})">
+                            <img src="${mainImage}" class="w-6 h-6 sm:w-8 sm:h-8 rounded object-cover">
+                            <span class="text-xs sm:text-sm">${p.name}</span>
+                        </div>
+                    `}).join('');
+                } else {
+                    predictiveResults.classList.add('hidden');
+                }
+            });
+        }
+
+        // Prevenir zoom en inputs en iOS
+        document.querySelectorAll('input, select, textarea').forEach(el => {
+            el.addEventListener('focus', () => {
+                if (window.innerWidth <= 640) {
+                    document.body.style.fontSize = '16px';
+                }
+            });
+        });
+    }
+
     // ==================== INICIALIZACIÓN ====================
     function init() {
         renderCategories();
         renderProducts();
         renderDestacados();
         cargarProductosDB();
+        setupMobileFeatures();
 
         const catFilter = document.getElementById('categoryFilter');
-        CATEGORIES.forEach(c => catFilter.innerHTML += `<option value="${c}">${c}</option>`);
+        CATEGORIES.forEach(c => catFilter.innerHTML += `<option value="${c}">${c</option>`);
 
         document.getElementById('applyFilters').addEventListener('click', filterProducts);
 
@@ -2011,6 +2304,9 @@ verificarConexion();
                 clienteView.classList.add('hidden');
                 adminView.classList.remove('hidden');
                 adminSidebar.classList.remove('hidden');
+                if (window.innerWidth <= 640) {
+                    adminMenuToggle.classList.remove('hidden');
+                }
                 renderAdminSection('resumen');
                 showToast('Bienvenido admin');
             } else {
@@ -2024,6 +2320,9 @@ verificarConexion();
                 document.querySelectorAll('[data-section]').forEach(l => l.classList.remove('active'));
                 link.classList.add('active');
                 renderAdminSection(link.dataset.section);
+                if (window.innerWidth <= 640) {
+                    adminSidebar.classList.remove('open');
+                }
             });
         });
 
@@ -2034,6 +2333,9 @@ verificarConexion();
             clienteView.classList.remove('hidden');
             adminView.classList.add('hidden');
             adminSidebar.classList.add('hidden');
+            if (window.innerWidth <= 640) {
+                adminMenuToggle.classList.add('hidden');
+            }
             showToast('Sesión cerrada');
         });
 
