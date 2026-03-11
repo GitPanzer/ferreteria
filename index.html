@@ -2,8 +2,8 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-  <title>Ferretería El Constructor · Panel Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>Ferretería El Constructor · Móvil</title>
   <!-- Google Fonts (Roboto) & Font Awesome -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,1412 +18,1434 @@
   <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     :root {
       --orange: #FF6B35;
       --dark-gray: #2C3E50;
       --light-bg: #f8f9fa;
       --shadow: 0 10px 20px rgba(0,0,0,0.05), 0 6px 6px rgba(0,0,0,0.05);
       --transition: all 0.25s ease;
+      --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-area-top: env(safe-area-inset-top, 0px);
     }
-    body { background: #f1f5f9; }
-    .app-wrapper { max-width: 1600px; margin: 0 auto; background: white; box-shadow: var(--shadow); }
-    .stock-low { background: #fee2e2; color: #dc2626; font-weight: 700; padding: 0.25rem 0.75rem; border-radius: 20px; }
-    .badge-urgent { background: #ef4444; color: white; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.8rem; border-radius: 40px; }
-    .admin-sidebar { background: var(--dark-gray); min-height: 100vh; color: white; }
-    .admin-sidebar a { color: #e2e8f0; display: flex; align-items: center; gap: 12px; padding: 1rem 1.5rem; transition: 0.2s; }
-    .admin-sidebar a:hover { background: #ff6b3530; color: white; }
-    .admin-sidebar a.active { background: var(--orange); color: white; border-left: 4px solid white; }
-    .product-thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 12px; }
-    .image-gallery { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; margin: 1rem 0; }
-    .gallery-item { border: 2px solid transparent; border-radius: 12px; cursor: pointer; overflow: hidden; }
-    .gallery-item.selected { border-color: var(--orange); transform: scale(1.02); }
-    
-    /* Dark Mode MEJORADO */
-    .dark-mode { 
-      background: #0a0f1c; 
-      color: #ffffff; 
-    }
-    .dark-mode .app-wrapper { 
-      background: #0f172a; 
-    }
-    .dark-mode .bg-white { 
-      background: #1e293b !important; 
-      color: #ffffff !important; 
-    }
-    .dark-mode .text-gray-900,
-    .dark-mode .text-gray-800,
-    .dark-mode .text-gray-700 { 
-      color: #f1f5f9 !important; 
-    }
-    .dark-mode .text-gray-600,
-    .dark-mode .text-gray-500 { 
-      color: #cbd5e1 !important; 
-    }
-    .dark-mode .border,
-    .dark-mode .border-gray-200,
-    .dark-mode .border-gray-300 { 
-      border-color: #334155 !important; 
-    }
-    .dark-mode .bg-gray-50,
-    .dark-mode .bg-gray-100 { 
-      background: #1e293b !important; 
-    }
-    .dark-mode .text-[#2C3E50] { 
-      color: #ffffff !important; 
-    }
-    .dark-mode .bg-gradient-to-r { 
-      opacity: 0.9; 
-    }
-    .dark-mode .hover\:bg-gray-100:hover { 
-      background: #2d3748 !important; 
-    }
-    .dark-mode .product-card, 
-    .dark-mode .bg-white.rounded-2xl,
-    .dark-mode .bg-white.rounded-xl,
-    .dark-mode .bg-white.rounded-3xl { 
-      background: #1e293b !important; 
-      color: #ffffff !important;
-      border: 1px solid #334155 !important;
-    }
-    .dark-mode .add-to-cart { 
-      background: #2d3748 !important; 
-      color: #ffffff !important; 
-      border-bottom-color: #1a202c; 
-    }
-    .dark-mode .add-to-cart:hover { 
-      background: #4a5568 !important; 
-    }
-    .dark-mode .admin-sidebar { 
-      background: #0a0f1c !important; 
-    }
-    .dark-mode .admin-sidebar a { 
-      color: #e2e8f0 !important; 
-    }
-    .dark-mode .admin-sidebar a:hover { 
-      background: #ff6b3540 !important; 
-    }
-    .dark-mode .admin-sidebar a.active { 
-      background: var(--orange) !important; 
-      color: white !important; 
-    }
-    .dark-mode .toast { 
-      background: #1e293b !important; 
-      color: #ffffff !important; 
-      border: 1px solid #334155; 
-    }
-    .dark-mode input,
-    .dark-mode select,
-    .dark-mode textarea { 
-      background: #0f172a !important; 
-      color: #ffffff !important; 
-      border-color: #475569 !important; 
-    }
-    .dark-mode input::placeholder { 
-      color: #94a3b8 !important; 
-    }
-    .dark-mode .bg-blue-50,
-    .dark-mode .bg-green-50,
-    .dark-mode .bg-yellow-50,
-    .dark-mode .bg-purple-50 { 
-      background: #1e293b !important; 
-    }
-    .dark-mode .text-blue-600,
-    .dark-mode .text-green-600,
-    .dark-mode .text-yellow-600,
-    .dark-mode .text-purple-600 { 
-      color: #ffffff !important; 
-    }
-    .dark-mode .stock-low { 
-      background: #991b1b !important; 
-      color: white !important; 
-    }
-    .dark-mode .badge-urgent { 
-      background: #dc2626 !important; 
-      color: white !important; 
-    }
-    .dark-mode #predictiveResults {
-      background: #1e293b !important;
-      border: 1px solid #334155;
-    }
-    .dark-mode #predictiveResults div:hover {
-      background: #2d3748 !important;
-    }
-    .dark-mode .footer {
-      background: #0f172a !important;
-      border-top: 1px solid #334155 !important;
-    }
-    
-    .toast { position: fixed; bottom: 20px; right: 20px; background: var(--dark-gray); color: white; padding: 1rem 2rem; border-radius: 60px; z-index: 9999; animation: slideIn 0.3s; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-    .offline-banner { background: #92400e; color: white; text-align: center; padding: 0.5rem; position: sticky; top: 0; z-index: 100; }
-    .fade-in { animation: fadeIn 0.5s; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    
-    /* Galería de imágenes múltiples */
-    .multi-image-gallery {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.5rem;
-      margin: 1rem 0;
-    }
-    .multi-image-item {
-      position: relative;
-      aspect-ratio: 1;
-      border-radius: 0.5rem;
-      overflow: hidden;
-      cursor: pointer;
-    }
-    .multi-image-item img {
+    body { 
+      background: #f1f5f9; 
+      font-family: 'Roboto', sans-serif;
+      overflow-x: hidden;
       width: 100%;
-      height: 100%;
-      object-fit: cover;
     }
-    .multi-image-item .remove-image {
-      position: absolute;
-      top: 4px;
-      right: 4px;
-      background: rgba(239, 68, 68, 0.9);
-      color: white;
-      width: 24px;
-      height: 24px;
+    .app-wrapper { 
+      max-width: 100%; 
+      margin: 0; 
+      background: white; 
+      box-shadow: var(--shadow);
+      min-height: 100vh;
+      position: relative;
+    }
+    
+    /* MEJORAS MÓVIL */
+    .mobile-container {
+      padding: 0 12px;
+      width: 100%;
+    }
+    
+    /* Header móvil optimizado */
+    .mobile-header {
+      padding: 8px 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .mobile-header-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    
+    .mobile-logo {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--dark-gray);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 160px;
+    }
+    
+    .mobile-logo i {
+      color: var(--orange);
+      margin-right: 4px;
+    }
+    
+    .mobile-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    
+    .mobile-icon-btn {
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 12px;
+      background: #f8f9fa;
+      border: none;
       cursor: pointer;
+      position: relative;
     }
-    .add-more-images {
-      border: 2px dashed #cbd5e1;
-      border-radius: 0.5rem;
-      aspect-ratio: 1;
+    
+    .mobile-icon-btn i {
+      font-size: 18px;
+      color: var(--dark-gray);
+    }
+    
+    .mobile-cart-badge {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      background: #ef4444;
+      color: white;
+      font-size: 10px;
+      font-weight: bold;
+      min-width: 18px;
+      height: 18px;
+      border-radius: 9px;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
+      padding: 0 4px;
+    }
+    
+    /* Búsqueda móvil */
+    .mobile-search {
+      padding: 8px 12px;
+      background: white;
+      border-bottom: 1px solid #e9ecef;
+    }
+    
+    .mobile-search-box {
+      position: relative;
+      width: 100%;
+    }
+    
+    .mobile-search-box i {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #adb5bd;
+      font-size: 14px;
+    }
+    
+    .mobile-search-box input {
+      width: 100%;
+      height: 44px;
+      border: 1px solid #e9ecef;
+      border-radius: 22px;
+      padding: 0 16px 0 40px;
+      font-size: 14px;
+      background: #f8f9fa;
+    }
+    
+    .mobile-search-box input:focus {
+      outline: 2px solid var(--orange);
+      border-color: transparent;
+    }
+    
+    /* Resultados búsqueda */
+    .mobile-predictive-results {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      max-height: 300px;
+      overflow-y: auto;
+      z-index: 1000;
+      margin-top: 4px;
+    }
+    
+    .mobile-predictive-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-bottom: 1px solid #f1f3f5;
+    }
+    
+    .mobile-predictive-item:active {
+      background: #f1f3f5;
+    }
+    
+    .mobile-predictive-item img {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+    
+    /* Categorías scroll horizontal */
+    .categories-section {
+      padding: 12px 0;
+    }
+    
+    .categories-scroll {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      padding: 4px 0;
+    }
+    
+    .categories-scroll::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .category-chip {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      border: 1px solid #dee2e6;
+      background: white;
+      color: var(--dark-gray);
+      transition: all 0.2s;
       cursor: pointer;
+    }
+    
+    .category-chip.active {
+      background: var(--orange);
+      color: white;
+      border-color: var(--orange);
+    }
+    
+    .category-chip:active {
+      transform: scale(0.95);
+    }
+    
+    /* Banner ofertas */
+    .offers-banner {
+      background: linear-gradient(135deg, #FF6B35, #FF8C5A);
+      border-radius: 16px;
+      padding: 16px;
+      margin: 12px 0;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .offers-banner h3 {
+      font-size: 18px;
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+    
+    .offers-banner p {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+    
+    .offers-banner i {
+      font-size: 40px;
+      opacity: 0.3;
+    }
+    
+    /* Filtros móvil */
+    .mobile-filters {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 8px 0;
+      scrollbar-width: none;
+    }
+    
+    .mobile-filters::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .filter-chip {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      background: white;
+      border: 1px solid #dee2e6;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .filter-chip i {
+      font-size: 12px;
+      color: #adb5bd;
+    }
+    
+    .filter-chip.active {
+      background: var(--orange);
+      color: white;
+      border-color: var(--orange);
+    }
+    
+    .filter-chip.active i {
+      color: white;
+    }
+    
+    /* Grid de productos optimizado móvil */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      padding: 12px 0;
+    }
+    
+    .product-card-mobile {
+      background: white;
+      border-radius: 16px;
+      padding: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      transition: transform 0.2s;
+      cursor: pointer;
+    }
+    
+    .product-card-mobile:active {
+      transform: scale(0.98);
+    }
+    
+    .product-image-mobile {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 12px;
+      object-fit: cover;
+      margin-bottom: 8px;
+      background: #f8f9fa;
+    }
+    
+    .product-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: #ef4444;
+      color: white;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 4px 8px;
+      border-radius: 12px;
+      z-index: 1;
+    }
+    
+    .product-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      height: 34px;
+    }
+    
+    .product-price {
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--orange);
+      margin-bottom: 8px;
+    }
+    
+    .add-to-cart-mobile {
+      width: 100%;
+      padding: 8px;
+      border-radius: 10px;
+      background: var(--dark-gray);
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+    
+    .add-to-cart-mobile:active {
+      opacity: 0.8;
+      transform: scale(0.98);
+    }
+    
+    .add-to-cart-mobile:disabled {
+      opacity: 0.5;
+      background: #adb5bd;
+    }
+    
+    /* Sidebar carrito móvil */
+    .cart-sidebar-mobile {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      max-width: 360px;
+      background: white;
+      box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .cart-sidebar-mobile.open {
+      transform: translateX(0);
+    }
+    
+    .cart-header {
+      padding: 16px;
+      border-bottom: 1px solid #e9ecef;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .cart-header h2 {
+      font-size: 18px;
+      font-weight: 900;
+    }
+    
+    .cart-items {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+    
+    .cart-item {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 12px;
+    }
+    
+    .cart-item-image {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+    
+    .cart-item-details {
+      flex: 1;
+    }
+    
+    .cart-item-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .cart-item-price {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--orange);
+      margin-bottom: 8px;
+    }
+    
+    .cart-item-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .cart-qty-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: white;
+      border: 1px solid #dee2e6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    
+    .cart-qty-btn:active {
+      background: #e9ecef;
+    }
+    
+    .cart-footer {
+      padding: 16px;
+      border-top: 1px solid #e9ecef;
+      background: white;
+    }
+    
+    .cart-total {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    
+    .checkout-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      background: var(--orange);
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+    }
+    
+    .checkout-btn:active {
+      opacity: 0.8;
+    }
+    
+    .checkout-btn:disabled {
+      opacity: 0.5;
+      background: #adb5bd;
+    }
+    
+    /* Modales móvil */
+    .modal-mobile {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: flex-end;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
       transition: all 0.3s;
     }
-    .add-more-images:hover {
-      border-color: var(--orange);
-      background: #ff6b3510;
+    
+    .modal-mobile.open {
+      opacity: 1;
+      visibility: visible;
     }
     
-    /* Footer */
-    .footer {
-      background: #f8f9fa;
-      border-top: 1px solid #e9ecef;
-      padding: 2rem 1.5rem;
-      margin-top: 2rem;
-    }
-    .footer a {
-      transition: var(--transition);
-    }
-    .footer a:hover {
-      color: var(--orange) !important;
-    }
-    
-    /* Imagen clickeable */
-    .clickable-image {
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-    .clickable-image:hover {
-      transform: scale(1.02);
-    }
-    
-    /* ========== MEJORAS RESPONSIVE PARA MÓVIL ========== */
-    @media (max-width: 640px) {
-      /* Header */
-      .header {
-        padding: 0.5rem;
-        gap: 0.25rem;
-      }
-      
-      /* Logo más pequeño en móvil */
-      .header .text-xl {
-        font-size: 1rem;
-      }
-      
-      /* Botón admin más pequeño */
-      .header .border {
-        padding: 0.4rem 0.8rem;
-        font-size: 0.7rem;
-      }
-      
-      /* Búsqueda móvil */
-      .mobile-search {
-        display: block;
-        width: 100%;
-        margin-top: 0.5rem;
-        order: 3;
-      }
-      
-      /* Grid de productos más compacto */
-      .product-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 0.5rem;
-      }
-      
-      /* Tarjetas de producto en móvil */
-      .product-card {
-        padding: 0.5rem !important;
-      }
-      
-      .product-card .h-24 {
-        height: 80px !important;
-      }
-      
-      .product-card .text-base {
-        font-size: 0.9rem !important;
-      }
-      
-      .product-card .text-sm {
-        font-size: 0.7rem !important;
-      }
-      
-      /* Categorías scroll horizontal */
-      .category-grid {
-        display: flex;
-        gap: 0.5rem;
-        padding-bottom: 0.5rem;
-        -webkit-overflow-scrolling: touch;
-      }
-      
-      .cat-btn {
-        padding: 0.4rem 1rem !important;
-        font-size: 0.75rem !important;
-        white-space: nowrap;
-      }
-      
-      /* Filtros en columna */
-      #minPrice, #maxPrice, #categoryFilter {
-        width: 100% !important;
-      }
-      
-      /* Búsqueda global visible en móvil */
-      #globalSearch {
-        display: none;
-      }
-      
-      .mobile-search-input {
-        display: block;
-        width: 100%;
-        padding: 0.5rem;
-        border: 1px solid #e2e8f0;
-        border-radius: 2rem;
-        font-size: 0.9rem;
-      }
-      
-      /* Sidebar admin full width en móvil */
-      .admin-sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 85%;
-        max-width: 300px;
-        height: 100vh;
-        z-index: 1000;
-        transform: translateX(-100%);
-        transition: transform 0.3s ease;
-        overflow-y: auto;
-      }
-      
-      .admin-sidebar.open {
-        transform: translateX(0);
-      }
-      
-      /* Botón menú hamburguesa para admin */
-      .admin-menu-toggle {
-        display: block;
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: var(--orange);
-        color: white;
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        z-index: 1001;
-        cursor: pointer;
-      }
-      
-      /* Modal contenido con padding reducido */
-      .modal-content {
-        padding: 1rem !important;
-        margin: 0.5rem !important;
-      }
-      
-      /* Checkout móvil */
-      #checkoutModal .max-w-md {
-        margin: 0.5rem;
-        padding: 1rem;
-      }
-      
-      /* Carrito sidebar ocupa toda la pantalla */
-      #cartSidebar {
-        max-width: 100%;
-      }
-      
-      /* Footer en columna */
-      .footer .grid {
-        grid-template-columns: 1fr !important;
-        gap: 1.5rem;
-      }
-      
-      /* Tablas con scroll horizontal */
-      .overflow-x-auto {
-        -webkit-overflow-scrolling: touch;
-      }
-      
-      /* Ajustes de tipografía */
-      h2.text-xl {
-        font-size: 1.2rem;
-      }
-      
-      .text-2xl {
-        font-size: 1.3rem;
-      }
-      
-      /* Zoom modal controles más accesibles */
-      #zoomModal button {
-        font-size: 1.5rem;
-        padding: 0.5rem;
-      }
-      
-      /* Thumbnails más pequeños */
-      .product-detail-thumbnails {
-        gap: 0.25rem;
-      }
-      
-      .product-detail-thumbnails img {
-        width: 40px;
-        height: 40px;
-      }
-      
-      /* Ajustes para imágenes en galería */
-      .multi-image-gallery {
-        gap: 0.25rem;
-      }
-      
-      /* Botones táctiles más grandes */
-      button, .clickable-image {
-        min-height: 44px;
-        min-width: 44px;
-      }
-      
-      /* Espaciado en formularios */
-      input, select, textarea {
-        font-size: 16px !important; /* Previene zoom en iOS */
-        padding: 0.75rem !important;
-      }
-      
-      /* Tablas responsivas en admin */
-      table {
-        min-width: 600px;
-      }
-      
-      td, th {
-        padding: 0.5rem !important;
-        font-size: 0.75rem !important;
-      }
-      
-      /* Tarjetas de métricas */
-      .grid.grid-cols-2 {
-        gap: 0.5rem;
-      }
-      
-      .p-6 {
-        padding: 1rem !important;
-      }
-      
-      /* Welcome modal */
-      #welcomeModal .max-w-lg {
-        margin: 1rem;
-        padding: 1.5rem;
-      }
-      
-      #welcomeModal h2 {
-        font-size: 1.5rem;
-      }
-      
-      /* Botón flotante de admin en móvil */
-      .admin-float-btn {
-        display: flex;
-      }
-      
-      /* Offline banner */
-      .offline-banner {
-        font-size: 0.8rem;
-        padding: 0.3rem;
-      }
-      
-      /* Resultados predictivos */
-      #predictiveResults {
-        position: fixed;
-        left: 0;
-        right: 0;
-        top: auto;
-        bottom: 0;
-        max-height: 50vh;
-        border-radius: 20px 20px 0 0;
-        z-index: 2000;
-      }
-    }
-    
-    /* Estilos para mostrar/ocultar elementos según dispositivo */
-    @media (min-width: 641px) {
-      .mobile-only {
-        display: none !important;
-      }
-      .mobile-search {
-        display: none;
-      }
-      .admin-menu-toggle {
-        display: none;
-      }
-    }
-    
-    @media (max-width: 640px) {
-      .desktop-only {
-        display: none !important;
-      }
-    }
-    
-    /* Ajustes para tablets */
-    @media (min-width: 641px) and (max-width: 1024px) {
-      .product-grid {
-        grid-template-columns: repeat(3, 1fr) !important;
-      }
-    }
-    
-    /* Sidebar admin responsive */
-    .admin-sidebar {
-      transition: transform 0.3s ease;
-    }
-    
-    /* Modal responsive */
-    .modal-content {
+    .modal-content-mobile {
+      background: white;
+      border-radius: 20px 20px 0 0;
+      width: 100%;
       max-height: 90vh;
       overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform 0.3s;
     }
     
-    /* Ajustes de touch para móvil */
-    .clickable-image {
-      -webkit-tap-highlight-color: transparent;
-    }
-    button, a {
-      -webkit-tap-highlight-color: transparent;
+    .modal-mobile.open .modal-content-mobile {
+      transform: translateY(0);
     }
     
-    /* Animaciones suaves en móvil */
-    @media (max-width: 640px) {
-      * {
-        transition: all 0.2s ease;
+    .modal-header {
+      padding: 16px;
+      border-bottom: 1px solid #e9ecef;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      background: white;
+      z-index: 10;
+    }
+    
+    .modal-header h3 {
+      font-size: 18px;
+      font-weight: 900;
+    }
+    
+    .modal-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #f1f3f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      cursor: pointer;
+    }
+    
+    /* Product detail mobile */
+    .product-detail-images {
+      position: relative;
+      aspect-ratio: 1;
+      background: #f8f9fa;
+    }
+    
+    .product-detail-main-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .product-detail-thumbnails {
+      display: flex;
+      gap: 8px;
+      padding: 12px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    
+    .product-detail-thumbnail {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 2px solid transparent;
+      cursor: pointer;
+    }
+    
+    .product-detail-thumbnail.active {
+      border-color: var(--orange);
+    }
+    
+    .product-detail-info {
+      padding: 16px;
+    }
+    
+    .product-detail-category {
+      font-size: 12px;
+      color: #6c757d;
+      margin-bottom: 4px;
+    }
+    
+    .product-detail-title {
+      font-size: 20px;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+    
+    .product-detail-price {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--orange);
+      margin-bottom: 16px;
+    }
+    
+    .product-detail-description {
+      font-size: 14px;
+      color: #4b5563;
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+    
+    /* Toast móvil */
+    .mobile-toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--dark-gray);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 2000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      animation: slideUp 0.3s ease;
+      max-width: 90%;
+      text-align: center;
+    }
+    
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translate(-50%, 20px);
       }
+      to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+    }
+    
+    /* Dark mode móvil */
+    .dark-mode-mobile {
+      background: #0a0f1c;
+      color: white;
+    }
+    
+    .dark-mode-mobile .app-wrapper {
+      background: #0f172a;
+    }
+    
+    .dark-mode-mobile .mobile-header,
+    .dark-mode-mobile .mobile-search,
+    .dark-mode-mobile .product-card-mobile,
+    .dark-mode-mobile .cart-sidebar-mobile,
+    .dark-mode-mobile .modal-content-mobile {
+      background: #1e293b;
+      color: white;
+    }
+    
+    .dark-mode-mobile input,
+    .dark-mode-mobile .category-chip {
+      background: #0f172a;
+      color: white;
+      border-color: #334155;
+    }
+    
+    /* Footer móvil */
+    .mobile-footer {
+      background: #f8f9fa;
+      padding: 24px 16px;
+      margin-top: 24px;
+      border-top: 1px solid #e9ecef;
+    }
+    
+    .dark-mode-mobile .mobile-footer {
+      background: #0f172a;
+      border-top-color: #334155;
+    }
+    
+    .footer-grid {
+      display: grid;
+      gap: 24px;
+    }
+    
+    .footer-section h4 {
+      font-size: 16px;
+      font-weight: 900;
+      margin-bottom: 12px;
+    }
+    
+    .footer-links {
+      list-style: none;
+    }
+    
+    .footer-links li {
+      margin-bottom: 8px;
+    }
+    
+    .footer-links a {
+      color: #6c757d;
+      font-size: 13px;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .footer-links a:active {
+      color: var(--orange);
+    }
+    
+    .designer-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--orange);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      margin-top: 8px;
+    }
+    
+    .designer-btn:active {
+      opacity: 0.8;
+    }
+    
+    /* Utilidades */
+    .hidden-mobile {
+      display: none;
+    }
+    
+    .safe-bottom {
+      padding-bottom: var(--safe-area-bottom);
     }
   </style>
 </head>
 <body>
 <div class="app-wrapper" id="appWrapper">
 
-  <!-- BANNER OFFLINE -->
-  <div id="offlineBanner" class="offline-banner hidden">
+  <!-- BANNER OFFLINE MÓVIL -->
+  <div id="offlineBanner" class="hidden" style="background: #92400e; color: white; text-align: center; padding: 8px; font-size: 12px; position: sticky; top: 0; z-index: 1000;">
     <i class="fas fa-wifi-slash"></i> Modo offline - algunos datos pueden no estar actualizados
   </div>
 
-  <!-- TOAST CONTAINER -->
-  <div id="toastContainer" class="fixed bottom-5 right-5 z-50"></div>
-
-  <!-- MODAL BIENVENIDA -->
-  <div id="welcomeModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[200] hidden">
-    <div class="bg-white rounded-3xl p-8 max-w-lg w-full mx-4 animate-fade-in">
-      <div class="text-center">
-        <div class="w-24 h-24 bg-[#FF6B35] rounded-full flex items-center justify-center mx-auto mb-6">
-          <i class="fas fa-tools text-4xl text-white"></i>
-        </div>
-        <h2 class="text-3xl font-black mb-4">¡Bienvenido a Ferretería El Constructor!</h2>
-        <p class="text-gray-600 mb-6">
-          Somos una ferretería con más de 20 años de experiencia, comprometidos en brindar los mejores productos y servicios para tus proyectos de construcción, reparación y mantenimiento.
-        </p>
-        <div class="space-y-4 text-left mb-8">
-          <div class="flex items-start gap-3">
-            <i class="fas fa-check-circle text-[#FF6B35] text-xl mt-1"></i>
-            <div>
-              <h3 class="font-bold">🛠️ Productos de calidad</h3>
-              <p class="text-sm text-gray-500">Trabajamos con las mejores marcas del mercado</p>
-            </div>
-          </div>
-          <div class="flex items-start gap-3">
-            <i class="fas fa-check-circle text-[#FF6B35] text-xl mt-1"></i>
-            <div>
-              <h3 class="font-bold">🚚 Envíos y retiros</h3>
-              <p class="text-sm text-gray-500">Podés retirar en nuestro local o coordinar envío</p>
-            </div>
-          </div>
-          <div class="flex items-start gap-3">
-            <i class="fas fa-check-circle text-[#FF6B35] text-xl mt-1"></i>
-            <div>
-              <h3 class="font-bold">💳 Pagá como quieras</h3>
-              <p class="text-sm text-gray-500">Efectivo, transferencia o tarjetas en el local</p>
-            </div>
-          </div>
-        </div>
-        <button id="closeWelcomeBtn" class="w-full bg-[#FF6B35] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#2C3E50] transition">
-          ¡Empezar a comprar!
+  <!-- HEADER MÓVIL OPTIMIZADO -->
+  <header class="mobile-header">
+    <div class="mobile-header-content">
+      <div class="mobile-logo">
+        <i class="fas fa-tools"></i>
+        <span>El Constructor</span>
+      </div>
+      
+      <div class="mobile-actions">
+        <button class="mobile-icon-btn" id="darkModeToggleMobile">
+          <i class="fas fa-moon"></i>
         </button>
-        <p class="text-xs text-gray-400 mt-4">Mostrar solo una vez</p>
+        
+        <button class="mobile-icon-btn" id="cartToggleMobile">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="mobile-cart-badge" id="cartCounterMobile">0</span>
+        </button>
+        
+        <button class="mobile-icon-btn" id="adminLockBtnMobile">
+          <i class="fas fa-lock"></i>
+        </button>
       </div>
-    </div>
-  </div>
-
-  <!-- HEADER -->
-  <header class="bg-white sticky top-0 z-40 border-b border-gray-200 px-4 sm:px-6 py-3 flex items-center justify-between header">
-    <div class="flex items-center gap-2 sm:gap-4">
-      <div class="text-xl sm:text-2xl font-black text-[#2C3E50]">
-        <i class="fas fa-tools text-[#FF6B35] mr-2"></i>
-        <span class="hidden xs:inline desktop-only">El Constructor</span>
-        <span class="mobile-only">Ferretería</span>
-      </div>
-      <div class="relative hidden md:block desktop-only">
-        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-        <input type="text" id="globalSearch" placeholder="Buscar productos..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-full w-64 lg:w-80 focus:outline-none focus:border-[#FF6B35]">
-        <div id="predictiveResults" class="absolute top-full left-0 right-0 bg-white shadow-lg rounded-xl mt-1 max-h-80 overflow-y-auto hidden"></div>
-      </div>
-    </div>
-    
-    <!-- Búsqueda móvil -->
-    <div class="mobile-search w-full mt-2 mobile-only">
-      <div class="relative">
-        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-        <input type="text" id="mobileSearch" placeholder="Buscar productos..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:border-[#FF6B35] mobile-search-input">
-      </div>
-    </div>
-    
-    <div class="flex items-center gap-2 sm:gap-4">
-      <button id="darkModeToggle" class="p-2 rounded-full hover:bg-gray-100 text-sm sm:text-base">
-        <i class="fas fa-moon"></i>
-      </button>
-      <div class="cart-icon relative cursor-pointer" id="cartToggle">
-        <i class="fas fa-shopping-cart text-xl sm:text-2xl text-[#2C3E50]"></i>
-        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full" id="cartCounter">0</span>
-      </div>
-      <button class="border border-[#2C3E50] px-3 sm:px-5 py-1.5 sm:py-2 rounded-full text-sm sm:text-base font-semibold hover:bg-[#2C3E50] hover:text-white transition" id="adminLockBtn">
-        <i class="fas fa-lock mr-1 sm:mr-2"></i>
-        <span class="hidden xs:inline desktop-only">Admin</span>
-        <span class="mobile-only">🔐</span>
-      </button>
     </div>
   </header>
 
-  <!-- MAIN CONTENT -->
-  <div class="flex min-h-screen relative">
-    <!-- SIDEBAR ADMIN (hidden por defecto) -->
-    <div id="adminSidebar" class="admin-sidebar hidden">
-      <div class="p-6 border-b border-gray-600">
-        <i class="fas fa-user-shield text-3xl mr-2"></i>
-        <span class="font-bold text-xl">Panel Admin</span>
-      </div>
-      <nav class="mt-6">
-        <a href="#" data-section="resumen" class="active"><i class="fas fa-chart-pie w-6"></i> Resumen</a>
-        <a href="#" data-section="productos"><i class="fas fa-boxes w-6"></i> Gestión Productos</a>
-        <a href="#" data-section="pedidos"><i class="fas fa-clipboard-list w-6"></i> Pedidos del día</a>
-        <a href="#" data-section="metricas"><i class="fas fa-chart-line w-6"></i> Métricas</a>
-        <a href="#" id="logoutAdmin"><i class="fas fa-sign-out-alt w-6"></i> Cerrar sesión</a>
-      </nav>
+  <!-- BÚSQUEDA MÓVIL -->
+  <div class="mobile-search">
+    <div class="mobile-search-box">
+      <i class="fas fa-search"></i>
+      <input type="text" id="mobileSearch" placeholder="Buscar productos...">
+      <div id="mobilePredictiveResults" class="mobile-predictive-results hidden"></div>
     </div>
-    
-    <!-- Botón menú admin móvil -->
-    <div id="adminMenuToggle" class="admin-menu-toggle hidden">
-      <i class="fas fa-bars"></i>
-    </div>
-
-    <!-- CONTENIDO PRINCIPAL (CLIENTE o ADMIN) -->
-    <main id="mainContent" class="flex-1 p-4 sm:p-6 main-content">
-      <!-- CLIENTE VIEW (default) -->
-      <div id="clienteView">
-        <!-- CATEGORÍAS -->
-        <div class="mb-6 sm:mb-8">
-          <h2 class="text-xl sm:text-2xl font-bold text-[#2C3E50] mb-4"><i class="fas fa-th-large text-[#FF6B35] mr-2"></i>Categorías</h2>
-          <div class="flex gap-2 sm:gap-3 overflow-x-auto pb-2 category-grid scrollable" id="categoryGrid"></div>
-        </div>
-
-        <!-- FILTROS AVANZADOS (responsive) -->
-        <div class="bg-gray-50 p-4 rounded-xl mb-6 flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center">
-          <select id="categoryFilter" class="border rounded-lg px-3 sm:px-4 py-2 text-sm sm:text-base w-full sm:w-auto">
-            <option value="">Todas las categorías</option>
-          </select>
-          <div class="flex gap-2 w-full sm:w-auto">
-            <input type="number" id="minPrice" placeholder="Mín" class="border rounded-lg px-3 sm:px-4 py-2 w-1/2 sm:w-28 text-sm sm:text-base">
-            <input type="number" id="maxPrice" placeholder="Máx" class="border rounded-lg px-3 sm:px-4 py-2 w-1/2 sm:w-28 text-sm sm:text-base">
-          </div>
-          <button id="applyFilters" class="bg-[#FF6B35] text-white px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto">Filtrar</button>
-        </div>
-
-        <!-- BANNER OFERTAS -->
-        <div id="ofertasBanner" class="bg-gradient-to-r from-orange-400 to-red-500 text-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl mb-6 sm:mb-8 flex items-center justify-between">
-          <div>
-            <h3 class="text-xl sm:text-2xl font-black">🔥 Ofertas del día</h3>
-            <p class="text-sm sm:text-base">Hasta 30% off en herramientas seleccionadas</p>
-          </div>
-          <i class="fas fa-tags text-3xl sm:text-5xl opacity-50"></i>
-        </div>
-
-        <!-- PRODUCTOS DESTACADOS -->
-        <h2 class="text-xl sm:text-2xl font-bold text-[#2C3E50] mb-4"><i class="fas fa-star text-[#FF6B35] mr-2"></i>Más vendidos</h2>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-6 sm:mb-8" id="destacadosGrid"></div>
-
-        <!-- TODOS LOS PRODUCTOS -->
-        <h2 class="text-xl sm:text-2xl font-bold text-[#2C3E50] mb-4"><i class="fas fa-box text-[#FF6B35] mr-2"></i>Todos los productos</h2>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 product-grid" id="productGrid"></div>
-      </div>
-
-      <!-- ADMIN VIEW (hidden) -->
-      <div id="adminView" class="hidden">
-        <div id="adminContent"></div>
-      </div>
-    </main>
   </div>
 
-  <!-- MODAL DETALLE PRODUCTO (sin stock) -->
-  <div id="productDetailModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[90] hidden p-4">
-    <div class="bg-white rounded-3xl p-4 sm:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto modal-content">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-xl sm:text-2xl font-bold" id="detailModalTitle"></h3>
-        <i class="fas fa-times text-2xl cursor-pointer" id="closeDetailModal"></i>
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="mobile-container" id="mainContent">
+    <!-- CLIENTE VIEW -->
+    <div id="clienteViewMobile">
+      
+      <!-- CATEGORÍAS SCROLL HORIZONTAL -->
+      <div class="categories-section">
+        <div class="categories-scroll" id="categoryGridMobile"></div>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-        <!-- Carrusel de imágenes con zoom -->
+
+      <!-- FILTROS MÓVIL -->
+      <div class="mobile-filters" id="mobileFilters">
+        <button class="filter-chip active" data-filter="todos">
+          <i class="fas fa-th-large"></i> Todos
+        </button>
+        <button class="filter-chip" data-filter="precio">
+          <i class="fas fa-dollar-sign"></i> Precio
+        </button>
+        <button class="filter-chip" data-filter="ofertas">
+          <i class="fas fa-tag"></i> Ofertas
+        </button>
+        <button class="filter-chip" data-filter="mas-vendidos">
+          <i class="fas fa-star"></i> Más vendidos
+        </button>
+      </div>
+
+      <!-- BANNER OFERTAS -->
+      <div class="offers-banner">
         <div>
-          <div id="mainImageContainer" class="h-48 sm:h-64 bg-cover bg-center rounded-xl mb-2 clickable-image" style="background-image: url('')" onclick="openZoomModal(currentImages, currentImageIndex)"></div>
-          <div id="thumbnailGallery" class="flex gap-2 overflow-x-auto product-detail-thumbnails"></div>
-          <p class="text-xs text-gray-500 mt-2 text-center">Hacé clic en la imagen para ver en pantalla completa con zoom</p>
+          <h3>🔥 Ofertas del día</h3>
+          <p>Hasta 30% off en herramientas</p>
         </div>
-        <!-- Detalles (sin stock) -->
-        <div>
-          <p class="text-gray-600 mb-2 text-sm sm:text-base" id="detailCategory"></p>
-          <p class="text-2xl sm:text-3xl font-black text-[#FF6B35] mb-4" id="detailPrice"></p>
-          <p class="text-gray-700 mb-4 text-sm sm:text-base" id="detailDescription"></p>
-          <button class="w-full bg-[#2C3E50] text-white py-3 rounded-xl font-bold hover:bg-[#FF6B35] transition text-sm sm:text-base" id="addFromDetailBtn">
-            <i class="fas fa-cart-plus mr-2"></i>Agregar al carrito
-          </button>
-        </div>
+        <i class="fas fa-tags"></i>
       </div>
-    </div>
-  </div>
 
-  <!-- MODAL ZOOM DE IMAGEN -->
-  <div id="zoomModal" class="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-[100] hidden">
-    <div class="relative w-full h-full flex items-center justify-center">
-      <button class="absolute top-5 right-5 text-white text-2xl sm:text-3xl z-10 hover:text-[#FF6B35]" onclick="closeZoomModal()">
-        <i class="fas fa-times"></i>
-      </button>
-      <button class="absolute left-2 sm:left-5 text-white text-3xl sm:text-4xl z-10 hover:text-[#FF6B35]" onclick="prevZoomImage()">
-        <i class="fas fa-chevron-left"></i>
-      </button>
-      <img id="zoomImage" class="max-h-[80vh] sm:max-h-[90vh] max-w-[90vw] object-contain" src="" alt="Zoom">
-      <button class="absolute right-2 sm:right-5 text-white text-3xl sm:text-4xl z-10 hover:text-[#FF6B35]" onclick="nextZoomImage()">
-        <i class="fas fa-chevron-right"></i>
-      </button>
-      <div class="absolute bottom-5 text-white text-sm bg-black bg-opacity-50 px-4 py-2 rounded-full">
-        <span id="zoomCounter">1/1</span>
-      </div>
-    </div>
-  </div>
+      <!-- PRODUCTOS MÁS VENDIDOS -->
+      <h2 style="font-size: 18px; font-weight: 900; margin: 16px 0 8px; color: var(--dark-gray);">
+        <i class="fas fa-star" style="color: var(--orange); margin-right: 8px;"></i>Más vendidos
+      </h2>
+      <div class="products-grid" id="destacadosGridMobile"></div>
 
-  <!-- MODAL CHECKOUT MEJORADO -->
-  <div id="checkoutModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[90] hidden p-4">
-    <div class="bg-white rounded-3xl p-4 sm:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto modal-content">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-xl sm:text-2xl font-bold">Finalizar compra</h3>
-        <i class="fas fa-times text-2xl cursor-pointer" id="closeCheckoutModal"></i>
+      <!-- TODOS LOS PRODUCTOS -->
+      <h2 style="font-size: 18px; font-weight: 900; margin: 16px 0 8px; color: var(--dark-gray);">
+        <i class="fas fa-box" style="color: var(--orange); margin-right: 8px;"></i>Todos los productos
+      </h2>
+      <div class="products-grid" id="productGridMobile"></div>
+    </div>
+
+    <!-- ADMIN VIEW (simplificado para móvil) -->
+    <div id="adminViewMobile" class="hidden">
+      <div id="adminContentMobile"></div>
+    </div>
+  </main>
+
+  <!-- CARRITO SIDEBAR MÓVIL -->
+  <div id="cartOverlayMobile" class="modal-mobile">
+    <div class="cart-sidebar-mobile" id="cartSidebarMobile">
+      <div class="cart-header">
+        <h2>🛒 Tu carrito</h2>
+        <button class="modal-close" id="closeCartMobile">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
       
-      <!-- Resumen del carrito -->
-      <div class="bg-gray-50 p-4 rounded-xl mb-4 max-h-40 overflow-y-auto">
-        <div id="checkoutCartSummary"></div>
-      </div>
-
-      <!-- Opciones de entrega -->
-      <div class="mb-6">
-        <h4 class="font-bold mb-3 text-sm sm:text-base">Método de entrega</h4>
-        <div class="space-y-3">
-          <label class="flex items-center p-3 border rounded-xl cursor-pointer hover:border-[#FF6B35]">
-            <input type="radio" name="deliveryMethod" value="retiro" class="mr-3" checked>
-            <div>
-              <span class="font-bold text-sm sm:text-base">Retiro en local</span>
-              <p class="text-xs sm:text-sm text-gray-500">Av. Siempre Viva 123</p>
-              <a href="https://maps.google.com/?q=Av.+Siempre+Viva+123" target="_blank" class="text-[#FF6B35] text-xs sm:text-sm">
-                <i class="fas fa-map-marker-alt mr-1"></i>Ver en Google Maps
-              </a>
-            </div>
-          </label>
-          
-          <label class="flex items-center p-3 border rounded-xl cursor-pointer hover:border-[#FF6B35]">
-            <input type="radio" name="deliveryMethod" value="domicilio" class="mr-3">
-            <div>
-              <span class="font-bold text-sm sm:text-base">Envío a domicilio</span>
-              <p class="text-xs sm:text-sm text-gray-500">Coordinar con el ferretero</p>
-            </div>
-          </label>
-        </div>
-      </div>
-
-      <!-- Fecha y hora (para retiro) -->
-      <div id="retiroFields" class="mb-6">
-        <h4 class="font-bold mb-3 text-sm sm:text-base">Fecha y hora de retiro</h4>
-        <input type="date" id="pickupDate" class="w-full border rounded-xl px-4 py-3 mb-3 text-sm sm:text-base" min="">
-        <select id="pickupTime" class="w-full border rounded-xl px-4 py-3 text-sm sm:text-base">
-          <option>9:00 - 12:00</option>
-          <option>12:00 - 15:00</option>
-          <option>15:00 - 18:00</option>
-          <option>18:00 - 20:00</option>
-        </select>
-      </div>
-
-      <!-- Datos de contacto - SOLO NOMBRE -->
-      <div class="mb-6">
-        <h4 class="font-bold mb-3 text-sm sm:text-base">Datos de contacto</h4>
-        <input type="text" id="checkoutName" placeholder="Nombre completo *" class="w-full border rounded-xl px-4 py-3 text-sm sm:text-base">
-        <p class="text-xs text-gray-500 mt-1">El ferretero se comunicará para coordinar la entrega</p>
-      </div>
-
-      <button id="confirmCheckoutBtn" class="w-full bg-[#FF6B35] text-white py-3 rounded-xl font-bold text-base sm:text-lg">
-        Confirmar pedido
-      </button>
-    </div>
-  </div>
-
-  <!-- CARRITO SIDEBAR -->
-  <div id="cartOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50"></div>
-  <div id="cartSidebar" class="fixed top-0 right-0 w-full max-w-md bg-white h-full shadow-2xl z-50 transform translate-x-full transition-transform duration-300">
-    <div class="p-4 sm:p-6 h-full flex flex-col">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl sm:text-2xl font-bold">🛒 Tu carrito</h2>
-        <i class="fas fa-times text-2xl cursor-pointer" id="closeCart"></i>
-      </div>
-      <div id="cartItems" class="flex-1 overflow-y-auto"></div>
-      <div class="border-t pt-4 mt-4">
-        <div class="flex justify-between text-lg sm:text-xl font-bold mb-4">
+      <div class="cart-items" id="cartItemsMobile"></div>
+      
+      <div class="cart-footer">
+        <div class="cart-total">
           <span>Total:</span>
-          <span id="cartTotal">$0</span>
+          <span id="cartTotalMobile">$0</span>
         </div>
-        <button id="checkoutBtn" class="w-full bg-[#FF6B35] text-white py-3 rounded-xl font-bold text-base sm:text-lg disabled:opacity-50" disabled>Finalizar compra</button>
+        <button class="checkout-btn" id="checkoutBtnMobile" disabled>Finalizar compra</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL LOGIN ADMIN -->
-  <div id="adminLoginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] hidden p-4">
-    <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full">
-      <i class="fas fa-user-shield text-4xl text-[#FF6B35] block text-center mb-4"></i>
-      <h3 class="text-xl sm:text-2xl font-bold text-center mb-6">Acceso Administrador</h3>
-      <input type="text" id="adminUser" placeholder="Usuario" value="admin" class="w-full border rounded-full px-4 py-3 mb-3 text-sm sm:text-base">
-      <input type="password" id="adminPass" placeholder="Contraseña" class="w-full border rounded-full px-4 py-3 mb-6 text-sm sm:text-base">
-      <button id="loginAdminBtn" class="w-full bg-[#2C3E50] text-white py-3 rounded-full font-bold text-sm sm:text-base">Ingresar</button>
-      <button id="closeAdminLogin" class="w-full text-gray-500 py-2 mt-2 text-sm sm:text-base">Cancelar</button>
-    </div>
-  </div>
-
-  <!-- MODAL AGREGAR/EDITAR PRODUCTO (SOLO SUBIR ARCHIVOS) -->
-  <div id="productModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70] hidden p-4">
-    <div class="bg-white rounded-3xl p-4 sm:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto modal-content">
-      <h3 class="text-xl sm:text-2xl font-bold mb-6" id="modalTitle">Agregar Producto</h3>
-      <form id="productForm">
-        <input type="hidden" id="productId">
-        <div class="mb-4">
-          <label class="block font-medium mb-2 text-sm sm:text-base">Nombre del producto</label>
-          <input type="text" id="productName" required class="w-full border rounded-xl px-4 py-3 text-sm sm:text-base">
-        </div>
-        <div class="mb-4">
-          <label class="block font-medium mb-2 text-sm sm:text-base">Descripción</label>
-          <textarea id="productDescription" rows="3" class="w-full border rounded-xl px-4 py-3 text-sm sm:text-base"></textarea>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-          <div>
-            <label class="block font-medium mb-2 text-sm sm:text-base">Categoría</label>
-            <select id="productCategory" class="w-full border rounded-xl px-4 py-3 text-sm sm:text-base"></select>
-          </div>
-          <div>
-            <label class="block font-medium mb-2 text-sm sm:text-base">Precio</label>
-            <input type="number" id="productPrice" required class="w-full border rounded-xl px-4 py-3 text-sm sm:text-base">
-          </div>
-        </div>
-        <div class="mb-4">
-          <label class="block font-medium mb-2 text-sm sm:text-base">Stock inicial</label>
-          <input type="number" id="productStock" required class="w-full border rounded-xl px-4 py-3 text-sm sm:text-base">
-        </div>
+  <!-- MODAL DETALLE PRODUCTO MÓVIL -->
+  <div id="productDetailModalMobile" class="modal-mobile">
+    <div class="modal-content-mobile">
+      <div class="modal-header">
+        <h3 id="detailModalTitleMobile"></h3>
+        <button class="modal-close" id="closeDetailModalMobile">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="product-detail-images">
+        <img id="detailMainImageMobile" class="product-detail-main-image" src="" alt="Producto">
+      </div>
+      
+      <div class="product-detail-thumbnails" id="thumbnailGalleryMobile"></div>
+      
+      <div class="product-detail-info">
+        <div class="product-detail-category" id="detailCategoryMobile"></div>
+        <div class="product-detail-title" id="detailNameMobile"></div>
+        <div class="product-detail-price" id="detailPriceMobile"></div>
+        <div class="product-detail-description" id="detailDescriptionMobile"></div>
         
-        <!-- MÚLTIPLES IMÁGENES - SOLO SUBIR ARCHIVOS -->
-        <div class="mb-4">
-          <label class="block font-medium mb-2 text-sm sm:text-base">Imágenes del producto</label>
-          <div id="multiImageContainer" class="multi-image-gallery"></div>
-          
-          <div class="mt-3">
-            <input type="file" id="multiImageUpload" accept="image/*" multiple class="w-full border rounded-xl p-2 text-sm sm:text-base">
-            <p class="text-xs text-gray-500 mt-1">Puedes seleccionar múltiples imágenes</p>
+        <button class="checkout-btn" id="addFromDetailBtnMobile">
+          <i class="fas fa-cart-plus"></i> Agregar al carrito
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CHECKOUT MÓVIL -->
+  <div id="checkoutModalMobile" class="modal-mobile">
+    <div class="modal-content-mobile">
+      <div class="modal-header">
+        <h3>Finalizar compra</h3>
+        <button class="modal-close" id="closeCheckoutModalMobile">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div style="padding: 16px;">
+        <!-- Resumen carrito -->
+        <div style="background: #f8f9fa; border-radius: 12px; padding: 12px; margin-bottom: 16px; max-height: 150px; overflow-y: auto;">
+          <div id="checkoutCartSummaryMobile"></div>
+        </div>
+
+        <!-- Método de entrega -->
+        <div style="margin-bottom: 16px;">
+          <h4 style="font-weight: 700; margin-bottom: 12px; font-size: 14px;">Método de entrega</h4>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid #dee2e6; border-radius: 12px;">
+              <input type="radio" name="deliveryMethodMobile" value="retiro" checked>
+              <div>
+                <span style="font-weight: 600;">Retiro en local</span>
+                <p style="font-size: 12px; color: #6c757d;">Av. Siempre Viva 123</p>
+              </div>
+            </label>
+            
+            <label style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid #dee2e6; border-radius: 12px;">
+              <input type="radio" name="deliveryMethodMobile" value="domicilio">
+              <div>
+                <span style="font-weight: 600;">Envío a domicilio</span>
+                <p style="font-size: 12px; color: #6c757d;">Coordinar con el ferretero</p>
+              </div>
+            </label>
           </div>
         </div>
 
-        <div class="flex flex-col sm:flex-row gap-3">
-          <button type="submit" class="flex-1 bg-[#FF6B35] text-white py-3 rounded-xl font-bold text-sm sm:text-base">Guardar</button>
-          <button type="button" id="closeProductModal" class="flex-1 border py-3 rounded-xl text-sm sm:text-base">Cancelar</button>
+        <!-- Fecha y hora retiro -->
+        <div id="retiroFieldsMobile" style="margin-bottom: 16px;">
+          <h4 style="font-weight: 700; margin-bottom: 12px; font-size: 14px;">Fecha y hora de retiro</h4>
+          <input type="date" id="pickupDateMobile" style="width: 100%; padding: 12px; border: 1px solid #dee2e6; border-radius: 12px; margin-bottom: 8px;">
+          <select id="pickupTimeMobile" style="width: 100%; padding: 12px; border: 1px solid #dee2e6; border-radius: 12px;">
+            <option>9:00 - 12:00</option>
+            <option>12:00 - 15:00</option>
+            <option>15:00 - 18:00</option>
+            <option>18:00 - 20:00</option>
+          </select>
         </div>
-      </form>
+
+        <!-- Datos contacto -->
+        <div style="margin-bottom: 24px;">
+          <h4 style="font-weight: 700; margin-bottom: 12px; font-size: 14px;">Datos de contacto</h4>
+          <input type="text" id="checkoutNameMobile" placeholder="Nombre completo *" style="width: 100%; padding: 12px; border: 1px solid #dee2e6; border-radius: 12px;">
+        </div>
+
+        <button class="checkout-btn" id="confirmCheckoutBtnMobile">Confirmar pedido</button>
+      </div>
     </div>
   </div>
 
-  <!-- MODAL CALCULADORA -->
-  <div id="calcModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70] hidden p-4">
-    <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full">
-      <h3 class="text-xl sm:text-2xl font-bold mb-4">🧮 Calculadora de materiales</h3>
-      <p class="mb-4 text-gray-600 text-sm sm:text-base">Calculá cuántas bolsas de cemento necesitas</p>
-      <input type="number" id="metrosCuadrados" placeholder="Metros cuadrados (m²)" class="w-full border rounded-xl px-4 py-3 mb-4 text-sm sm:text-base">
-      <select id="tipoMaterial" class="w-full border rounded-xl px-4 py-3 mb-4 text-sm sm:text-base">
-        <option value="7">Cemento (7kg/m²)</option>
-        <option value="10">Cemento albañilería (10kg/m²)</option>
-      </select>
-      <div id="calcResult" class="text-lg sm:text-xl font-bold text-center mb-4"></div>
-      <button id="closeCalc" class="w-full bg-[#2C3E50] text-white py-3 rounded-xl text-sm sm:text-base">Cerrar</button>
+  <!-- MODAL LOGIN ADMIN MÓVIL -->
+  <div id="adminLoginModalMobile" class="modal-mobile">
+    <div class="modal-content-mobile">
+      <div class="modal-header">
+        <h3>Acceso Administrador</h3>
+        <button class="modal-close" id="closeAdminLoginMobile">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div style="padding: 24px;">
+        <i class="fas fa-user-shield" style="font-size: 40px; color: var(--orange); display: block; text-align: center; margin-bottom: 16px;"></i>
+        
+        <input type="text" id="adminUserMobile" placeholder="Usuario" value="admin" style="width: 100%; padding: 12px; border: 1px solid #dee2e6; border-radius: 12px; margin-bottom: 12px;">
+        <input type="password" id="adminPassMobile" placeholder="Contraseña" style="width: 100%; padding: 12px; border: 1px solid #dee2e6; border-radius: 12px; margin-bottom: 16px;">
+        
+        <button class="checkout-btn" id="loginAdminBtnMobile" style="background: var(--dark-gray);">Ingresar</button>
+      </div>
     </div>
   </div>
 
-  <!-- MODAL ÉXITO PEDIDO -->
-  <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[80] hidden p-4">
-    <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full text-center">
-      <i class="fas fa-circle-check text-5xl sm:text-6xl text-green-500 mb-4"></i>
-      <h2 class="text-2xl sm:text-3xl font-black mb-2">¡Pedido confirmado!</h2>
-      <p class="text-xs sm:text-sm text-gray-600 mb-2">Guardá este código para retirar o coordinar el envío</p>
-      <div class="text-4xl sm:text-5xl font-black bg-gray-100 py-4 rounded-2xl my-4" id="orderCode">4X2F</div>
-      <div id="orderSummary" class="text-left bg-gray-50 p-4 rounded-xl mb-4 text-sm sm:text-base"></div>
-      <button id="whatsappShare" class="w-full bg-[#25D366] text-white py-3 rounded-xl font-bold mb-2 text-sm sm:text-base"><i class="fab fa-whatsapp mr-2"></i>Compartir por WhatsApp</button>
-      <button id="closeSuccessModal" class="w-full bg-[#2C3E50] text-white py-3 rounded-xl font-bold text-sm sm:text-base">Seguir comprando</button>
+  <!-- MODAL ÉXITO PEDIDO MÓVIL -->
+  <div id="successModalMobile" class="modal-mobile">
+    <div class="modal-content-mobile" style="border-radius: 20px;">
+      <div style="padding: 24px; text-align: center;">
+        <i class="fas fa-circle-check" style="font-size: 60px; color: #10b981; margin-bottom: 16px;"></i>
+        <h2 style="font-size: 24px; font-weight: 900; margin-bottom: 8px;">¡Pedido confirmado!</h2>
+        <p style="font-size: 12px; color: #6c757d; margin-bottom: 8px;">Guardá este código para retirar</p>
+        
+        <div style="font-size: 32px; font-weight: 900; background: #f8f9fa; padding: 16px; border-radius: 12px; margin: 16px 0;" id="orderCodeMobile">4X2F</div>
+        
+        <div style="background: #f8f9fa; border-radius: 12px; padding: 12px; margin-bottom: 16px; text-align: left; font-size: 12px; white-space: pre-wrap;" id="orderSummaryMobile"></div>
+        
+        <button class="checkout-btn" id="whatsappShareMobile" style="background: #25D366; margin-bottom: 8px;">
+          <i class="fab fa-whatsapp"></i> Compartir por WhatsApp
+        </button>
+        <button class="checkout-btn" id="closeSuccessModalMobile" style="background: var(--dark-gray);">
+          Seguir comprando
+        </button>
+      </div>
     </div>
   </div>
+
+  <!-- FOOTER MÓVIL -->
+  <footer class="mobile-footer">
+    <div class="footer-grid">
+      <div class="footer-section">
+        <h4>Contacto</h4>
+        <ul class="footer-links">
+          <li><a href="mailto:ferretero@elconstructor.com"><i class="fas fa-envelope"></i> ferretero@elconstructor.com</a></li>
+          <li><a href="https://wa.me/5491159602127" target="_blank"><i class="fab fa-whatsapp"></i> +54 9 11 5960-2127</a></li>
+          <li><a href="https://maps.google.com/?q=Av.+Siempre+Viva+123" target="_blank"><i class="fas fa-map-marker-alt"></i> Av. Siempre Viva 123</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>Horarios</h4>
+        <ul class="footer-links">
+          <li>Lunes a Viernes: 8:00 - 18:00</li>
+          <li>Sábados: 8:00 - 13:00</li>
+          <li>Domingos: Cerrado</li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>Enlaces</h4>
+        <ul class="footer-links">
+          <li><a href="#">Términos y condiciones</a></li>
+          <li><a href="#">Política de privacidad</a></li>
+          <li><a href="#">Preguntas frecuentes</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>Diseñado por</h4>
+        <a href="mailto:gitpanzer@gmail.com?subject=Contacto%20por%20diseño%20web" class="designer-btn">
+          <i class="fas fa-code"></i> gitpanzer
+        </a>
+        <p style="font-size: 11px; color: #6c757d; margin-top: 8px;">© 2024 Todos los derechos reservados</p>
+      </div>
+    </div>
+  </footer>
 </div>
 
-<!-- FOOTER (SÓCALO) -->
-<footer class="footer">
-  <div class="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
-    <!-- Contacto -->
-    <div>
-      <h4 class="font-bold text-base sm:text-lg mb-4">Contacto</h4>
-      <ul class="space-y-2 text-sm sm:text-base">
-        <li>
-          <a href="mailto:ferretero@elconstructor.com" class="text-gray-600 hover:text-[#FF6B35] flex items-center gap-2">
-            <i class="fas fa-envelope"></i>
-            <span class="break-all">ferretero@elconstructor.com</span>
-          </a>
-        </li>
-        <li>
-          <a href="https://wa.me/5491159602127" target="_blank" class="text-gray-600 hover:text-[#FF6B35] flex items-center gap-2">
-            <i class="fab fa-whatsapp"></i>
-            +54 9 11 5960-2127
-          </a>
-        </li>
-        <li>
-          <a href="https://maps.google.com/?q=Av.+Siempre+Viva+123" target="_blank" class="text-gray-600 hover:text-[#FF6B35] flex items-center gap-2">
-            <i class="fas fa-map-marker-alt"></i>
-            Av. Siempre Viva 123
-          </a>
-        </li>
-      </ul>
-    </div>
-    
-    <!-- Horarios -->
-    <div>
-      <h4 class="font-bold text-base sm:text-lg mb-4">Horarios</h4>
-      <ul class="space-y-2 text-gray-600 text-sm sm:text-base">
-        <li>Lunes a Viernes: 8:00 - 18:00</li>
-        <li>Sábados: 8:00 - 13:00</li>
-        <li>Domingos: Cerrado</li>
-      </ul>
-    </div>
-    
-    <!-- Enlaces rápidos -->
-    <div>
-      <h4 class="font-bold text-base sm:text-lg mb-4">Enlaces</h4>
-      <ul class="space-y-2 text-sm sm:text-base">
-        <li><a href="#" class="text-gray-600 hover:text-[#FF6B35]">Términos y condiciones</a></li>
-        <li><a href="#" class="text-gray-600 hover:text-[#FF6B35]">Política de privacidad</a></li>
-        <li><a href="#" class="text-gray-600 hover:text-[#FF6B35]">Preguntas frecuentes</a></li>
-      </ul>
-    </div>
-    
-    <!-- Diseñado por -->
-    <div>
-      <h4 class="font-bold text-base sm:text-lg mb-4">Diseñado por</h4>
-      <a href="mailto:gitpanzer@gmail.com?subject=Contacto%20por%20diseño%20web&body=Hola%2C%20me%20contacto%20desde%20la%20ferretería%20para%20consultar%20sobre%20el%20diseño..." 
-         class="inline-flex items-center gap-2 bg-[#FF6B35] text-white px-4 py-2 rounded-full hover:bg-[#2C3E50] transition text-sm sm:text-base">
-        <i class="fas fa-code"></i>
-        gitpanzer
-      </a>
-      <p class="text-xs sm:text-sm text-gray-500 mt-2">© 2024 Todos los derechos reservados</p>
-    </div>
-  </div>
-</footer>
+<!-- TOAST MÓVIL -->
+<div id="toastContainerMobile"></div>
 
 <script>
-// ==================== CONFIGURACIÓN SUPABASE (GLOBAL) ====================
+// ==================== CONFIGURACIÓN SUPABASE ====================
 const supabaseUrl = 'https://whesdugggeckszdrjjge.supabase.co';
 const supabaseKey = 'sb_publishable_hbfg_QcYZviUFvUnGCpv6A_6pVmuMES';
 const { createClient } = supabase;
 const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
-console.log('✅ Supabase inicializado');
-
-// ==================== VARIABLES GLOBALES PARA ZOOM ====================
+// ==================== VARIABLES GLOBALES ====================
+let products = [];
+let cart = [];
+let pedidos = [];
+let adminSession = false;
+let darkMode = false;
+let currentProductId = null;
 let currentImages = [];
-let currentImageIndex = 0;
 
-// ==================== FUNCIONES DE ZOOM ====================
-function openZoomModal(images, index) {
-    currentImages = images;
-    currentImageIndex = index;
-    updateZoomImage();
-    document.getElementById('zoomModal').classList.remove('hidden');
+// CATEGORÍAS
+const CATEGORIES = [
+    'Herramientas Eléctricas', 'Herramientas Manuales', 'Pinturas y Accesorios', 
+    'Electricidad', 'Plomería', 'Construcción', 'Jardinería', 'Seguridad Industrial'
+];
+
+// PRODUCTOS INICIALES
+const INITIAL_PRODUCTS = [
+    { id: 1, name: 'Taladro Percutor 800W', description: 'Taladro percutor profesional con velocidad variable. Incluye maletín y accesorios.', price: 28500, category: 'Herramientas Eléctricas', stock: 4, images: ['https://images.unsplash.com/photo-1504148455328-c376907d081c?w=200&h=150&fit=crop'], sales: 45 },
+    { id: 2, name: 'Martillo de uña 20oz', description: 'Martillo de uña con mango ergonómico. Ideal para carpintería y construcción.', price: 5300, category: 'Herramientas Manuales', stock: 12, images: ['https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=200&h=150&fit=crop'], sales: 38 },
+    { id: 3, name: 'Pintura Látex Blanco 10L', description: 'Pintura al látex para interiores y exteriores. Fácil aplicación y lavable.', price: 18900, category: 'Pinturas y Accesorios', stock: 6, images: ['https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=200&h=150&fit=crop'], sales: 27 },
+    { id: 4, name: 'Cable eléctrico #12 (100m)', description: 'Cable eléctrico de cobre para instalaciones residenciales.', price: 12400, category: 'Electricidad', stock: 3, images: ['https://images.unsplash.com/photo-1557404763-69708cd6b6ce?w=200&h=150&fit=crop'], sales: 31 },
+    { id: 5, name: 'Llave inglesa 12"', description: 'Llave ajustable de acero al carbono con acabado cromado.', price: 8900, category: 'Herramientas Manuales', stock: 9, images: ['https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=200&h=150&fit=crop'], sales: 42 },
+    { id: 6, name: 'Caño PVC 110mm x 3m', description: 'Caño de PVC para desagües y ventilaciones. Resistente y duradero.', price: 6700, category: 'Plomería', stock: 8, images: ['https://images.unsplash.com/photo-1575157915773-2b01a23958b3?w=200&h=150&fit=crop'], sales: 19 },
+    { id: 7, name: 'Cortadora de césped', description: 'Cortadora de césped eléctrica con bolsa recolectora.', price: 78900, category: 'Jardinería', stock: 2, images: ['https://images.unsplash.com/photo-1581094288338-2314fc1b3c1a?w=200&h=150&fit=crop'], sales: 12 },
+    { id: 8, name: 'Casco de seguridad', description: 'Casco de seguridad con visor ajustable. Cumple normas internacionales.', price: 4500, category: 'Seguridad Industrial', stock: 15, images: ['https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=200&h=150&fit=crop'], sales: 33 },
+    { id: 9, name: 'Juego de destornilladores', description: 'Juego de 6 destornilladores con puntas magnéticas.', price: 9800, category: 'Herramientas Manuales', stock: 5, images: ['https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200&h=150&fit=crop'], sales: 51 },
+    { id: 10, name: 'Amoladora angular 4½"', description: 'Amoladora angular potente para corte y desbaste de metales.', price: 22400, category: 'Herramientas Eléctricas', stock: 7, images: ['https://images.unsplash.com/photo-1617802690992-15d93263d3a9?w=200&h=150&fit=crop'], sales: 29 }
+];
+
+// ==================== FUNCIONES UTILIDAD ====================
+function showToastMobile(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = 'mobile-toast';
+    toast.style.background = type === 'error' ? '#dc2626' : '#2C3E50';
+    toast.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'} mr-2"></i>${message}`;
+    document.getElementById('toastContainerMobile').appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
 }
 
-function closeZoomModal() {
-    document.getElementById('zoomModal').classList.add('hidden');
+function loadFromStorage() {
+    products = JSON.parse(localStorage.getItem('ferreteria_productos')) || INITIAL_PRODUCTS;
+    pedidos = JSON.parse(localStorage.getItem('ferreteria_pedidos')) || [];
+    cart = JSON.parse(localStorage.getItem('ferreteria_carrito')) || [];
+    darkMode = localStorage.getItem('darkMode') === 'true';
+    adminSession = localStorage.getItem('ferreteria_admin_session') === 'true';
 }
 
-function updateZoomImage() {
-    const zoomImage = document.getElementById('zoomImage');
-    const zoomCounter = document.getElementById('zoomCounter');
+function saveToStorage() {
+    localStorage.setItem('ferreteria_productos', JSON.stringify(products));
+    localStorage.setItem('ferreteria_pedidos', JSON.stringify(pedidos));
+    localStorage.setItem('ferreteria_carrito', JSON.stringify(cart));
+}
+
+function generateOrderCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ123456789';
+    return Array(4).fill(0).map(() => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
+
+// ==================== RENDER FUNCTIONS ====================
+function renderCategoriesMobile() {
+    const grid = document.getElementById('categoryGridMobile');
+    let html = '<button class="category-chip active" data-cat="todos">Todos</button>';
+    CATEGORIES.forEach(cat => {
+        html += `<button class="category-chip" data-cat="${cat}">${cat}</button>`;
+    });
+    grid.innerHTML = html;
     
-    if (currentImages && currentImages.length > 0) {
-        zoomImage.src = currentImages[currentImageIndex];
-        zoomCounter.innerText = `${currentImageIndex + 1}/${currentImages.length}`;
-    }
+    document.querySelectorAll('.category-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.category-chip').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            filterProductsMobile();
+        });
+    });
 }
 
-function nextZoomImage() {
-    if (currentImages && currentImages.length > 0) {
-        currentImageIndex = (currentImageIndex + 1) % currentImages.length;
-        updateZoomImage();
-    }
-}
-
-function prevZoomImage() {
-    if (currentImages && currentImages.length > 0) {
-        currentImageIndex = (currentImageIndex - 1 + currentImages.length) % currentImages.length;
-        updateZoomImage();
-    }
-}
-
-// ==================== FUNCIÓN DE VERIFICACIÓN ====================
-async function verificarConexion() {
-    console.log('%c🔍 VERIFICANDO CONEXIÓN CON SUPABASE...', 'color: blue; font-weight: bold');
+function renderProductsMobile(productList = products) {
+    const grid = document.getElementById('productGridMobile');
+    let html = '';
+    productList.forEach(p => {
+        const mainImage = p.images && p.images.length > 0 ? p.images[0] : p.image;
+        const stockBadge = p.stock <= 5 && p.stock > 0 ? 
+            '<span class="product-badge"><i class="fas fa-exclamation-triangle"></i> ÚLTIMAS ' + p.stock + '</span>' : '';
+        const noStock = p.stock === 0 ? 
+            '<span class="product-badge" style="background: #6c757d;">Sin stock</span>' : '';
+        
+        html += `
+            <div class="product-card-mobile" data-id="${p.id}">
+                <div style="position: relative;">
+                    <img src="${mainImage}" class="product-image-mobile" alt="${p.name}">
+                    ${stockBadge || noStock}
+                </div>
+                <h3 class="product-title">${p.name}</h3>
+                <div class="product-price">$${p.price.toLocaleString()}</div>
+                <button class="add-to-cart-mobile" ${p.stock === 0 ? 'disabled' : ''} data-id="${p.id}">
+                    <i class="fas fa-cart-plus"></i> ${p.stock === 0 ? 'Sin stock' : 'Agregar'}
+                </button>
+            </div>
+        `;
+    });
+    grid.innerHTML = html;
     
-    try {
-        console.log('📡 Cliente Supabase:', supabaseClient ? '✅ Inicializado' : '❌ No inicializado');
-        console.log('🌐 Verificando conexión...');
-        
-        const { data, error } = await supabaseClient
-            .from('productos')
-            .select('count', { count: 'exact', head: true });
-        
-        if (error) {
-            console.error('%c❌ ERROR DE CONEXIÓN:', 'color: red', error);
-            return false;
-        }
-        
-        console.log('%c✅ CONEXIÓN EXITOSA!', 'color: green; font-weight: bold');
-        return true;
-        
-    } catch (error) {
-        console.error('%c❌ ERROR INESPERADO:', 'color: red', error);
-        return false;
-    }
+    document.querySelectorAll('.product-card-mobile').forEach(card => {
+        card.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('add-to-cart-mobile') && !e.target.closest('.add-to-cart-mobile')) {
+                const id = parseInt(card.dataset.id);
+                openProductDetailMobile(id);
+            }
+        });
+    });
+    
+    document.querySelectorAll('.add-to-cart-mobile').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const id = parseInt(btn.dataset.id);
+            addToCartMobile(id);
+        });
+    });
 }
 
-// Ejecutar verificación
-verificarConexion();
-
-// ==================== FUNCIÓN PRINCIPAL ====================
-(function() {
-    const supabase = supabaseClient;
-
-    // ==================== CONSTANTES ====================
-    const CATEGORIES = [
-        'Herramientas Eléctricas', 'Herramientas Manuales', 'Pinturas y Accesorios', 
-        'Electricidad', 'Plomería', 'Construcción', 'Jardinería', 'Seguridad Industrial'
-    ];
-
-    const INITIAL_PRODUCTS = [
-        { id: 1, name: 'Taladro Percutor 800W', description: 'Taladro percutor profesional con velocidad variable. Incluye maletín y accesorios.', price: 28500, category: 'Herramientas Eléctricas', stock: 4, images: ['https://images.unsplash.com/photo-1504148455328-c376907d081c?w=200&h=150&fit=crop'], sales: 45 },
-        { id: 2, name: 'Martillo de uña 20oz', description: 'Martillo de uña con mango ergonómico. Ideal para carpintería y construcción.', price: 5300, category: 'Herramientas Manuales', stock: 12, images: ['https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=200&h=150&fit=crop'], sales: 38 },
-        { id: 3, name: 'Pintura Látex Blanco 10L', description: 'Pintura al látex para interiores y exteriores. Fácil aplicación y lavable.', price: 18900, category: 'Pinturas y Accesorios', stock: 6, images: ['https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=200&h=150&fit=crop'], sales: 27 },
-        { id: 4, name: 'Cable eléctrico #12 (100m)', description: 'Cable eléctrico de cobre para instalaciones residenciales.', price: 12400, category: 'Electricidad', stock: 3, images: ['https://images.unsplash.com/photo-1557404763-69708cd6b6ce?w=200&h=150&fit=crop'], sales: 31 },
-        { id: 5, name: 'Llave inglesa 12"', description: 'Llave ajustable de acero al carbono con acabado cromado.', price: 8900, category: 'Herramientas Manuales', stock: 9, images: ['https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=200&h=150&fit=crop'], sales: 42 },
-        { id: 6, name: 'Caño PVC 110mm x 3m', description: 'Caño de PVC para desagües y ventilaciones. Resistente y duradero.', price: 6700, category: 'Plomería', stock: 8, images: ['https://images.unsplash.com/photo-1575157915773-2b01a23958b3?w=200&h=150&fit=crop'], sales: 19 },
-        { id: 7, name: 'Cortadora de césped', description: 'Cortadora de césped eléctrica con bolsa recolectora.', price: 78900, category: 'Jardinería', stock: 2, images: ['https://images.unsplash.com/photo-1581094288338-2314fc1b3c1a?w=200&h=150&fit=crop'], sales: 12 },
-        { id: 8, name: 'Casco de seguridad', description: 'Casco de seguridad con visor ajustable. Cumple normas internacionales.', price: 4500, category: 'Seguridad Industrial', stock: 15, images: ['https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=200&h=150&fit=crop'], sales: 33 },
-        { id: 9, name: 'Juego de destornilladores', description: 'Juego de 6 destornilladores con puntas magnéticas.', price: 9800, category: 'Herramientas Manuales', stock: 5, images: ['https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200&h=150&fit=crop'], sales: 51 },
-        { id: 10, name: 'Amoladora angular 4½"', description: 'Amoladora angular potente para corte y desbaste de metales.', price: 22400, category: 'Herramientas Eléctricas', stock: 7, images: ['https://images.unsplash.com/photo-1617802690992-15d93263d3a9?w=200&h=150&fit=crop'], sales: 29 }
-    ];
-
-    // ==================== ESTADO GLOBAL ====================
-    let products = JSON.parse(localStorage.getItem('ferreteria_productos')) || INITIAL_PRODUCTS;
-    let pedidos = JSON.parse(localStorage.getItem('ferreteria_pedidos')) || [];
-    let cart = JSON.parse(localStorage.getItem('ferreteria_carrito')) || [];
-    let adminSession = localStorage.getItem('ferreteria_admin_session') === 'true';
-    let darkMode = localStorage.getItem('darkMode') === 'true';
-    let currentProductId = null;
-    let activeAdminSection = 'resumen';
-
-    // Elementos DOM
-    const clienteView = document.getElementById('clienteView');
-    const adminView = document.getElementById('adminView');
-    const adminSidebar = document.getElementById('adminSidebar');
-    const adminContent = document.getElementById('adminContent');
-    const productGrid = document.getElementById('productGrid');
-    const categoryGrid = document.getElementById('categoryGrid');
-    const cartCounter = document.getElementById('cartCounter');
-    const cartSidebar = document.getElementById('cartSidebar');
-    const cartItems = document.getElementById('cartItems');
-    const cartTotal = document.getElementById('cartTotal');
-    const checkoutBtn = document.getElementById('checkoutBtn');
-    const globalSearch = document.getElementById('globalSearch');
-    const mobileSearch = document.getElementById('mobileSearch');
-    const predictiveResults = document.getElementById('predictiveResults');
-    const destacadosGrid = document.getElementById('destacadosGrid');
-    const darkModeToggle = document.getElementById('darkModeToggle');
-    const appWrapper = document.getElementById('appWrapper');
-    const productDetailModal = document.getElementById('productDetailModal');
-    const checkoutModal = document.getElementById('checkoutModal');
-    const welcomeModal = document.getElementById('welcomeModal');
-    const closeWelcomeBtn = document.getElementById('closeWelcomeBtn');
-    const adminMenuToggle = document.getElementById('adminMenuToggle');
-
-    // ==================== MODAL BIENVENIDA ====================
-    if (!localStorage.getItem('welcomeShown')) {
-        welcomeModal.classList.remove('hidden');
-        localStorage.setItem('welcomeShown', 'true');
-    }
-
-    closeWelcomeBtn.addEventListener('click', () => {
-        welcomeModal.classList.add('hidden');
+function renderDestacadosMobile() {
+    const destacados = [...products].sort((a,b) => b.sales - a.sales).slice(0, 6);
+    const grid = document.getElementById('destacadosGridMobile');
+    let html = '';
+    destacados.forEach(p => {
+        const mainImage = p.images && p.images.length > 0 ? p.images[0] : p.image;
+        html += `
+            <div class="product-card-mobile" data-id="${p.id}">
+                <img src="${mainImage}" class="product-image-mobile" alt="${p.name}">
+                <h3 class="product-title">${p.name}</h3>
+                <div class="product-price">$${p.price.toLocaleString()}</div>
+                <button class="add-to-cart-mobile" data-id="${p.id}">
+                    <i class="fas fa-cart-plus"></i> Agregar
+                </button>
+            </div>
+        `;
     });
-
-    // ==================== FUNCIONES SUPABASE ====================
-
-    async function subirMultiplesImagenes(files) {
-        const urls = [];
-        for (const file of files) {
-            try {
-                const fileExt = file.name.split('.').pop();
-                const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-                const filePath = `productos/${fileName}`;
-
-                const { error: uploadError } = await supabase.storage
-                    .from('productos')
-                    .upload(filePath, file, {
-                        cacheControl: '3600',
-                        upsert: false
-                    });
-
-                if (uploadError) throw uploadError;
-
-                const { data: { publicUrl } } = supabase.storage
-                    .from('productos')
-                    .getPublicUrl(filePath);
-
-                urls.push(publicUrl);
-            } catch (error) {
-                console.error('Error subiendo imagen:', error);
+    grid.innerHTML = html;
+    
+    document.querySelectorAll('#destacadosGridMobile .product-card-mobile').forEach(card => {
+        card.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('add-to-cart-mobile')) {
+                const id = parseInt(card.dataset.id);
+                openProductDetailMobile(id);
             }
-        }
-        return urls;
-    }
-
-    async function cargarProductosDB() {
-        try {
-            const { data, error } = await supabase
-                .from('productos')
-                .select('*')
-                .order('id', { ascending: false });
-
-            if (error) throw error;
-            
-            if (data && data.length > 0) {
-                products = data;
-                localStorage.setItem('ferreteria_productos', JSON.stringify(products));
-            }
-            
-            renderProducts();
-            renderDestacados();
-            if (adminSession) renderAdminSection(activeAdminSection);
-        } catch (error) {
-            console.error('Error cargando productos:', error);
-            showToast('Usando datos locales', 'error');
-            renderProducts();
-            renderDestacados();
-        }
-    }
-
-    async function guardarProductoDB(productData, files = []) {
-        try {
-            let images = productData.images || [];
-            
-            if (files.length > 0) {
-                const uploadedUrls = await subirMultiplesImagenes(files);
-                images = [...images, ...uploadedUrls];
-            }
-            
-            const productoParaGuardar = {
-                name: productData.name,
-                description: productData.description || '',
-                price: productData.price,
-                category: productData.category,
-                stock: productData.stock,
-                images: images,
-                image: images[0] || '',
-                sales: productData.sales || 0
-            };
-            
-            if (productData.id) {
-                const { error } = await supabase
-                    .from('productos')
-                    .update(productoParaGuardar)
-                    .eq('id', productData.id);
-                
-                if (error) throw error;
-            } else {
-                const { error } = await supabase
-                    .from('productos')
-                    .insert([productoParaGuardar]);
-                
-                if (error) throw error;
-            }
-            
-            await cargarProductosDB();
-            showToast(productData.id ? 'Producto actualizado' : 'Producto agregado');
-            return true;
-        } catch (error) {
-            console.error('Error guardando producto:', error);
-            showToast('Error al guardar', 'error');
-            return false;
-        }
-    }
-
-    // ==================== FUNCIONES UTILIDAD ====================
-    function showToast(message, type = 'success') {
-        const toast = document.createElement('div');
-        toast.className = `toast ${type === 'error' ? 'bg-red-500' : 'bg-[#2C3E50]'}`;
-        toast.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'} mr-2"></i>${message}`;
-        document.getElementById('toastContainer').appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-    }
-
-    function saveToLocalStorage() {
-        localStorage.setItem('ferreteria_productos', JSON.stringify(products));
-        localStorage.setItem('ferreteria_pedidos', JSON.stringify(pedidos));
-        localStorage.setItem('ferreteria_carrito', JSON.stringify(cart));
-    }
-
-    // ==================== RENDER FUNCTIONS ====================
-    function renderCategories() {
-        let html = '<button class="cat-btn px-4 sm:px-6 py-2 rounded-full font-semibold bg-[#FF6B35] text-white text-sm sm:text-base" data-cat="todos">Todos</button>';
-        CATEGORIES.forEach(cat => {
-            html += `<button class="cat-btn px-4 sm:px-6 py-2 rounded-full font-semibold border border-gray-300 hover:border-[#FF6B35] text-sm sm:text-base" data-cat="${cat}">${cat}</button>`;
         });
-        categoryGrid.innerHTML = html;
-        document.querySelectorAll('.cat-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('bg-[#FF6B35]', 'text-white'));
-                btn.classList.add('bg-[#FF6B35]', 'text-white');
-                filterProducts();
-            });
+    });
+    
+    document.querySelectorAll('#destacadosGridMobile .add-to-cart-mobile').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const id = parseInt(btn.dataset.id);
+            addToCartMobile(id);
         });
+    });
+}
+
+function filterProductsMobile() {
+    const activeCat = document.querySelector('.category-chip.active')?.dataset.cat || 'todos';
+    let filtered = products.filter(p => activeCat === 'todos' || p.category === activeCat);
+    renderProductsMobile(filtered);
+}
+
+// ==================== CARRITO ====================
+function addToCartMobile(id) {
+    const product = products.find(p => p.id === id);
+    if (!product || product.stock === 0) return;
+
+    const existing = cart.find(item => item.id === id);
+    if (existing) {
+        if (existing.quantity < product.stock) existing.quantity++;
+        else { showToastMobile('Stock máximo disponible', 'error'); return; }
+    } else {
+        cart.push({ ...product, quantity: 1 });
     }
+    updateCartMobile();
+    showToastMobile(`${product.name} agregado al carrito`);
+}
 
-    function filterProducts() {
-        const cat = document.querySelector('.cat-btn.bg-\\[\\#FF6B35\\]')?.dataset.cat || 'todos';
-        const min = document.getElementById('minPrice')?.value || 0;
-        const max = document.getElementById('maxPrice')?.value || Infinity;
-        
-        let filtered = products.filter(p => {
-            const matchCat = cat === 'todos' || p.category === cat;
-            const matchPrice = p.price >= min && p.price <= max;
-            return matchCat && matchPrice;
-        });
-
-        renderProducts(filtered);
-    }
-
-    function renderProducts(productList = products) {
+function updateCartMobile() {
+    saveToStorage();
+    const totalItems = cart.reduce((acc, i) => acc + i.quantity, 0);
+    document.getElementById('cartCounterMobile').innerText = totalItems;
+    
+    const itemsContainer = document.getElementById('cartItemsMobile');
+    const totalSpan = document.getElementById('cartTotalMobile');
+    const checkoutBtn = document.getElementById('checkoutBtnMobile');
+    
+    if (cart.length === 0) {
+        itemsContainer.innerHTML = '<p style="text-align: center; color: #adb5bd; margin-top: 20px;">Carrito vacío</p>';
+    } else {
         let html = '';
-        productList.forEach(p => {
-            const stockUrgent = p.stock <= 5 && p.stock > 0 ? `<span class="badge-urgent text-xs"><i class="fas fa-exclamation-triangle"></i> ¡ÚLTIMAS ${p.stock}!</span>` : '';
-            const noStock = p.stock === 0 ? '<span class="bg-gray-500 text-white text-xs px-3 py-1 rounded-full">Sin stock</span>' : '';
-            const mainImage = p.images && p.images.length > 0 ? p.images[0] : p.image;
-            html += `
-                <div class="bg-white rounded-xl sm:rounded-2xl p-2 sm:p-3 shadow hover:shadow-xl transition cursor-pointer product-card" data-id="${p.id}">
-                    <div class="h-24 sm:h-36 bg-cover bg-center rounded-lg sm:rounded-xl mb-2 relative" style="background-image: url('${mainImage}')">
-                        ${stockUrgent || noStock}
-                    </div>
-                    <h4 class="font-bold text-xs sm:text-sm line-clamp-2">${p.name}</h4>
-                    <div class="text-[#FF6B35] font-black text-base sm:text-xl mt-1">$${p.price.toLocaleString()}</div>
-                    <button class="add-to-cart w-full mt-2 bg-[#2C3E50] text-white py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold disabled:opacity-50" ${p.stock === 0 ? 'disabled' : ''} data-id="${p.id}" onclick="event.stopPropagation()">
-                        <i class="fas fa-cart-plus mr-1"></i> ${p.stock === 0 ? 'Sin stock' : 'Agregar'}
-                    </button>
-                </div>
-            `;
-        });
-        productGrid.innerHTML = html;
-
-        document.querySelectorAll('.product-card').forEach(card => {
-            card.addEventListener('click', (e) => {
-                if (!e.target.classList.contains('add-to-cart') && !e.target.closest('.add-to-cart')) {
-                    const id = parseInt(card.dataset.id);
-                    openProductDetail(id);
-                }
-            });
-        });
-
-        document.querySelectorAll('.add-to-cart').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const id = parseInt(btn.dataset.id);
-                addToCart(id);
-            });
-        });
-    }
-
-    function renderDestacados() {
-        const destacados = [...products].sort((a,b) => b.sales - a.sales).slice(0, 6);
-        let html = '';
-        destacados.forEach(p => {
-            const mainImage = p.images && p.images.length > 0 ? p.images[0] : p.image;
-            html += `
-                <div class="bg-white rounded-lg sm:rounded-xl p-2 shadow cursor-pointer" onclick="openProductDetail(${p.id})">
-                    <div class="h-16 sm:h-20 bg-cover bg-center rounded-lg" style="background-image: url('${mainImage}')"></div>
-                    <div class="text-xs font-bold mt-1 line-clamp-1">${p.name}</div>
-                    <div class="text-[#FF6B35] font-bold text-xs sm:text-sm">$${p.price.toLocaleString()}</div>
-                </div>
-            `;
-        });
-        destacadosGrid.innerHTML = html;
-    }
-
-    // ==================== MODAL DETALLE PRODUCTO (sin stock) ====================
-    function openProductDetail(id) {
-        const product = products.find(p => p.id === id);
-        if (!product) return;
-
-        document.getElementById('detailModalTitle').innerText = product.name;
-        document.getElementById('detailCategory').innerText = product.category;
-        document.getElementById('detailPrice').innerText = `$${product.price.toLocaleString()}`;
-        document.getElementById('detailDescription').innerText = product.description || 'Sin descripción';
-        
-        // Guardar imágenes para el zoom
-        currentImages = product.images && product.images.length > 0 ? product.images : [product.image];
-        currentImageIndex = 0;
-        
-        document.getElementById('mainImageContainer').style.backgroundImage = `url('${currentImages[0]}')`;
-        
-        let thumbnails = '';
-        currentImages.forEach((img, index) => {
-            thumbnails += `<img src="${img}" class="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-lg cursor-pointer border-2 ${index === 0 ? 'border-[#FF6B35]' : 'border-transparent'}" onclick="changeMainImage(this.src, ${index})">`;
-        });
-        document.getElementById('thumbnailGallery').innerHTML = thumbnails;
-
-        document.getElementById('addFromDetailBtn').setAttribute('data-id', id);
-        productDetailModal.classList.remove('hidden');
-    }
-
-    window.changeMainImage = function(src, index) {
-        document.getElementById('mainImageContainer').style.backgroundImage = `url('${src}')`;
-        document.querySelectorAll('#thumbnailGallery img').forEach((img, i) => {
-            if (i === index) {
-                img.classList.add('border-[#FF6B35]');
-                img.classList.remove('border-transparent');
-            } else {
-                img.classList.remove('border-[#FF6B35]');
-                img.classList.add('border-transparent');
-            }
-        });
-        currentImageIndex = index;
-    };
-
-    document.getElementById('closeDetailModal').addEventListener('click', () => {
-        productDetailModal.classList.add('hidden');
-    });
-
-    document.getElementById('addFromDetailBtn').addEventListener('click', (e) => {
-        const id = parseInt(e.target.getAttribute('data-id'));
-        addToCart(id);
-        productDetailModal.classList.add('hidden');
-    });
-
-    // ==================== CHECKOUT MEJORADO ====================
-    checkoutBtn.addEventListener('click', () => {
-        openCheckoutModal();
-    });
-
-    function openCheckoutModal() {
-        if (cart.length === 0) return;
-
-        let summaryHtml = '';
         cart.forEach(item => {
-            summaryHtml += `<div class="flex justify-between text-xs sm:text-sm mb-2">
-                <span class="truncate pr-2">${item.name} x${item.quantity}</span>
-                <span class="font-bold whitespace-nowrap">$${(item.price * item.quantity).toLocaleString()}</span>
-            </div>`;
+            const mainImage = item.images && item.images.length > 0 ? item.images[0] : item.image;
+            html += `
+                <div class="cart-item">
+                    <img src="${mainImage}" class="cart-item-image">
+                    <div class="cart-item-details">
+                        <div class="cart-item-title">${item.name}</div>
+                        <div class="cart-item-price">$${item.price.toLocaleString()}</div>
+                        <div class="cart-item-actions">
+                            <button class="cart-qty-btn dec-cart" data-id="${item.id}">-</button>
+                            <span style="font-weight: 600;">${item.quantity}</span>
+                            <button class="cart-qty-btn inc-cart" data-id="${item.id}">+</button>
+                            <button class="cart-qty-btn" style="margin-left: auto;" data-id="${item.id}" onclick="removeFromCart(${item.id})">
+                                <i class="fas fa-trash" style="color: #ef4444;"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
         });
-        summaryHtml += `<div class="flex justify-between font-bold pt-2 border-t text-sm sm:text-base">
-            <span>Total:</span>
-            <span>$${cart.reduce((acc, i) => acc + (i.price * i.quantity), 0).toLocaleString()}</span>
-        </div>`;
-        document.getElementById('checkoutCartSummary').innerHTML = summaryHtml;
-
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        document.getElementById('pickupDate').min = tomorrow.toISOString().split('T')[0];
-
-        checkoutModal.classList.remove('hidden');
+        itemsContainer.innerHTML = html;
+        
+        document.querySelectorAll('.inc-cart').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = parseInt(btn.dataset.id);
+                const item = cart.find(i => i.id === id);
+                const product = products.find(p => p.id === id);
+                if (item.quantity < product.stock) item.quantity++;
+                updateCartMobile();
+            });
+        });
+        
+        document.querySelectorAll('.dec-cart').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = parseInt(btn.dataset.id);
+                const item = cart.find(i => i.id === id);
+                if (item.quantity > 1) item.quantity--;
+                else cart = cart.filter(i => i.id !== id);
+                updateCartMobile();
+            });
+        });
     }
+    
+    const total = cart.reduce((acc, i) => acc + (i.price * i.quantity), 0);
+    totalSpan.innerText = `$${total.toLocaleString()}`;
+    checkoutBtn.disabled = cart.length === 0;
+}
 
-    document.getElementById('closeCheckoutModal').addEventListener('click', () => {
-        checkoutModal.classList.add('hidden');
+window.removeFromCart = function(id) {
+    cart = cart.filter(i => i.id !== id);
+    updateCartMobile();
+};
+
+// ==================== MODAL DETALLE ====================
+function openProductDetailMobile(id) {
+    const product = products.find(p => p.id === id);
+    if (!product) return;
+    
+    currentImages = product.images || [product.image];
+    currentProductId = id;
+    
+    document.getElementById('detailModalTitleMobile').innerText = product.name;
+    document.getElementById('detailNameMobile').innerText = product.name;
+    document.getElementById('detailCategoryMobile').innerText = product.category;
+    document.getElementById('detailPriceMobile').innerText = `$${product.price.toLocaleString()}`;
+    document.getElementById('detailDescriptionMobile').innerText = product.description || 'Sin descripción';
+    document.getElementById('detailMainImageMobile').src = currentImages[0];
+    
+    let thumbnails = '';
+    currentImages.forEach((img, index) => {
+        thumbnails += `<img src="${img}" class="product-detail-thumbnail ${index === 0 ? 'active' : ''}" onclick="changeDetailImageMobile(this.src, ${index})">`;
     });
+    document.getElementById('thumbnailGalleryMobile').innerHTML = thumbnails;
+    
+    document.getElementById('addFromDetailBtnMobile').setAttribute('data-id', id);
+    document.getElementById('productDetailModalMobile').classList.add('open');
+}
 
-    document.querySelectorAll('input[name="deliveryMethod"]').forEach(radio => {
+window.changeDetailImageMobile = function(src, index) {
+    document.getElementById('detailMainImageMobile').src = src;
+    document.querySelectorAll('.product-detail-thumbnail').forEach((thumb, i) => {
+        if (i === index) thumb.classList.add('active');
+        else thumb.classList.remove('active');
+    });
+};
+
+// ==================== CHECKOUT ====================
+function openCheckoutModalMobile() {
+    if (cart.length === 0) return;
+    
+    let summaryHtml = '';
+    cart.forEach(item => {
+        summaryHtml += `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px;">
+            <span>${item.name} x${item.quantity}</span>
+            <span style="font-weight: 600;">$${(item.price * item.quantity).toLocaleString()}</span>
+        </div>`;
+    });
+    summaryHtml += `<div style="display: flex; justify-content: space-between; font-weight: 700; padding-top: 8px; border-top: 1px solid #dee2e6;">
+        <span>Total:</span>
+        <span>$${cart.reduce((acc, i) => acc + (i.price * i.quantity), 0).toLocaleString()}</span>
+    </div>`;
+    document.getElementById('checkoutCartSummaryMobile').innerHTML = summaryHtml;
+    
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    document.getElementById('pickupDateMobile').min = tomorrow.toISOString().split('T')[0];
+    
+    document.getElementById('checkoutModalMobile').classList.add('open');
+}
+
+// ==================== INICIALIZACIÓN ====================
+function initMobile() {
+    loadFromStorage();
+    
+    renderCategoriesMobile();
+    renderProductsMobile();
+    renderDestacadosMobile();
+    updateCartMobile();
+    
+    // Dark mode
+    if (darkMode) {
+        document.getElementById('appWrapper').classList.add('dark-mode-mobile');
+        document.getElementById('darkModeToggleMobile').innerHTML = '<i class="fas fa-sun"></i>';
+    }
+    
+    // Event listeners
+    document.getElementById('darkModeToggleMobile').addEventListener('click', () => {
+        darkMode = !darkMode;
+        document.getElementById('appWrapper').classList.toggle('dark-mode-mobile');
+        localStorage.setItem('darkMode', darkMode);
+        document.getElementById('darkModeToggleMobile').innerHTML = darkMode ? 
+            '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+    });
+    
+    document.getElementById('cartToggleMobile').addEventListener('click', () => {
+        document.getElementById('cartOverlayMobile').classList.add('open');
+        document.getElementById('cartSidebarMobile').classList.add('open');
+    });
+    
+    document.getElementById('closeCartMobile').addEventListener('click', () => {
+        document.getElementById('cartOverlayMobile').classList.remove('open');
+        document.getElementById('cartSidebarMobile').classList.remove('open');
+    });
+    
+    document.getElementById('closeDetailModalMobile').addEventListener('click', () => {
+        document.getElementById('productDetailModalMobile').classList.remove('open');
+    });
+    
+    document.getElementById('addFromDetailBtnMobile').addEventListener('click', (e) => {
+        const id = parseInt(e.target.getAttribute('data-id'));
+        addToCartMobile(id);
+        document.getElementById('productDetailModalMobile').classList.remove('open');
+    });
+    
+    document.getElementById('checkoutBtnMobile').addEventListener('click', openCheckoutModalMobile);
+    
+    document.getElementById('closeCheckoutModalMobile').addEventListener('click', () => {
+        document.getElementById('checkoutModalMobile').classList.remove('open');
+    });
+    
+    document.querySelectorAll('input[name="deliveryMethodMobile"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
-            if (e.target.value === 'retiro') {
-                document.getElementById('retiroFields').style.display = 'block';
-            } else {
-                document.getElementById('retiroFields').style.display = 'none';
-            }
+            document.getElementById('retiroFieldsMobile').style.display = 
+                e.target.value === 'retiro' ? 'block' : 'none';
         });
     });
-
-    document.getElementById('confirmCheckoutBtn').addEventListener('click', async () => {
-        const name = document.getElementById('checkoutName').value;
-
+    
+    document.getElementById('confirmCheckoutBtnMobile').addEventListener('click', () => {
+        const name = document.getElementById('checkoutNameMobile').value;
         if (!name) {
-            showToast('Completá tu nombre', 'error');
+            showToastMobile('Completá tu nombre', 'error');
             return;
         }
-
-        const deliveryMethod = document.querySelector('input[name="deliveryMethod"]:checked').value;
-        const deliveryDetails = deliveryMethod === 'retiro' ? {
-            method: 'Retiro en local',
-            date: document.getElementById('pickupDate').value,
-            time: document.getElementById('pickupTime').value,
-            address: 'Av. Siempre Viva 123'
-        } : {
-            method: 'Envío a domicilio',
-            details: 'Coordinar con el ferretero'
-        };
-
+        
+        const deliveryMethod = document.querySelector('input[name="deliveryMethodMobile"]:checked').value;
         const orderCode = generateOrderCode();
         const total = cart.reduce((acc, i) => acc + (i.price * i.quantity), 0);
         
@@ -1434,7 +1456,7 @@ verificarConexion();
                 product.sales = (product.sales || 0) + item.quantity;
             }
         });
-
+        
         const order = {
             code: orderCode,
             date: new Date().toISOString(),
@@ -1442,998 +1464,163 @@ verificarConexion();
             total,
             estado: 'Pendiente',
             cliente: name,
-            delivery: deliveryDetails
+            delivery: {
+                method: deliveryMethod === 'retiro' ? 'Retiro en local' : 'Envío a domicilio',
+                date: deliveryMethod === 'retiro' ? document.getElementById('pickupDateMobile').value : null,
+                time: deliveryMethod === 'retiro' ? document.getElementById('pickupTimeMobile').value : null
+            }
         };
-
+        
         pedidos.push(order);
-        saveToLocalStorage();
-
-        try {
-            await supabase
-                .from('pedidos')
-                .insert([{
-                    code: orderCode,
-                    cliente: name,
-                    total: total,
-                    items: cart,
-                    estado: 'Pendiente',
-                    delivery: deliveryDetails
-                }]);
-        } catch (error) {
-            console.error('Error guardando pedido en Supabase:', error);
-        }
-
-        document.getElementById('orderCode').innerText = orderCode;
+        saveToStorage();
+        
+        document.getElementById('orderCodeMobile').innerText = orderCode;
         let summary = '';
         cart.forEach(i => summary += `${i.name} x${i.quantity} = $${(i.price*i.quantity).toLocaleString()}\n`);
-        summary += `\n📦 ${deliveryMethod === 'retiro' ? 'Retiro en local' : 'Envío a domicilio'}`;
-        if (deliveryMethod === 'retiro' && deliveryDetails.date) {
-            summary += `\n📅 ${deliveryDetails.date} ${deliveryDetails.time}`;
+        summary += `\n📦 ${order.delivery.method}`;
+        if (order.delivery.date) {
+            summary += `\n📅 ${order.delivery.date} ${order.delivery.time}`;
         }
-        document.getElementById('orderSummary').innerText = summary + `\n\nTotal: $${total.toLocaleString()}`;
+        summary += `\n\nTotal: $${total.toLocaleString()}`;
+        document.getElementById('orderSummaryMobile').innerText = summary;
         
-        checkoutModal.classList.add('hidden');
-        document.getElementById('successModal').classList.remove('hidden');
+        document.getElementById('checkoutModalMobile').classList.remove('open');
+        document.getElementById('successModalMobile').classList.add('open');
         
         cart = [];
-        updateCartUI();
-        renderProducts();
-        renderDestacados();
-        if (adminSession) renderAdminSection(activeAdminSection);
+        updateCartMobile();
+        renderProductsMobile();
+        renderDestacadosMobile();
     });
-
-    // ==================== CARRITO ====================
-    function addToCart(id) {
-        const product = products.find(p => p.id === id);
-        if (!product || product.stock === 0) return;
-
-        const existing = cart.find(item => item.id === id);
-        if (existing) {
-            if (existing.quantity < product.stock) existing.quantity++;
-            else { showToast('Stock máximo disponible', 'error'); return; }
+    
+    document.getElementById('closeSuccessModalMobile').addEventListener('click', () => {
+        document.getElementById('successModalMobile').classList.remove('open');
+    });
+    
+    document.getElementById('whatsappShareMobile').addEventListener('click', () => {
+        const code = document.getElementById('orderCodeMobile').innerText;
+        const summary = document.getElementById('orderSummaryMobile').innerText;
+        const msg = `🎉 *Pedido confirmado en Ferretería El Constructor* 🎉\n\nCódigo: ${code}\n\n${summary}`;
+        window.open(`https://wa.me/5491159602127?text=${encodeURIComponent(msg)}`, '_blank');
+    });
+    
+    document.getElementById('adminLockBtnMobile').addEventListener('click', () => {
+        document.getElementById('adminLoginModalMobile').classList.add('open');
+    });
+    
+    document.getElementById('closeAdminLoginMobile').addEventListener('click', () => {
+        document.getElementById('adminLoginModalMobile').classList.remove('open');
+    });
+    
+    document.getElementById('loginAdminBtnMobile').addEventListener('click', () => {
+        const user = document.getElementById('adminUserMobile').value;
+        const pass = document.getElementById('adminPassMobile').value;
+        if (user === 'admin' && pass === 'admin123') {
+            adminSession = true;
+            localStorage.setItem('ferreteria_admin_session', 'true');
+            document.getElementById('adminLoginModalMobile').classList.remove('open');
+            document.getElementById('clienteViewMobile').classList.add('hidden');
+            document.getElementById('adminViewMobile').classList.remove('hidden');
+            showToastMobile('Bienvenido admin');
+            renderAdminMobile();
         } else {
-            cart.push({ ...product, quantity: 1 });
+            showToastMobile('Credenciales incorrectas', 'error');
         }
-        updateCartUI();
-        showToast(`${product.name} agregado al carrito`);
-    }
-
-    function updateCartUI() {
-        localStorage.setItem('ferreteria_carrito', JSON.stringify(cart));
-        const totalItems = cart.reduce((acc, i) => acc + i.quantity, 0);
-        cartCounter.innerText = totalItems;
-
-        if (cartItems) {
-            if (cart.length === 0) {
-                cartItems.innerHTML = '<p class="text-center text-gray-400 mt-10">Carrito vacío</p>';
-            } else {
-                let html = '';
-                cart.forEach(item => {
-                    const mainImage = item.images && item.images.length > 0 ? item.images[0] : item.image;
-                    html += `
-                        <div class="flex gap-2 sm:gap-3 mb-3 p-2 bg-gray-50 rounded-xl">
-                            <div class="w-12 h-12 sm:w-16 sm:h-16 bg-cover bg-center rounded-lg flex-shrink-0" style="background-image: url('${mainImage}')"></div>
-                            <div class="flex-1 min-w-0">
-                                <h5 class="font-bold text-xs sm:text-sm truncate">${item.name}</h5>
-                                <div class="text-[#FF6B35] font-bold text-xs sm:text-sm">$${item.price.toLocaleString()}</div>
-                                <div class="flex items-center gap-1 sm:gap-2 mt-1">
-                                    <button class="decCart w-5 h-5 sm:w-6 sm:h-6 bg-gray-200 rounded-full text-xs sm:text-sm" data-id="${item.id}">-</button>
-                                    <span class="font-bold text-xs sm:text-sm">${item.quantity}</span>
-                                    <button class="incCart w-5 h-5 sm:w-6 sm:h-6 bg-gray-200 rounded-full text-xs sm:text-sm" data-id="${item.id}">+</button>
-                                    <button class="delCart ml-auto text-red-500 text-xs sm:text-sm" data-id="${item.id}"><i class="fas fa-trash"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-                cartItems.innerHTML = html;
-
-                document.querySelectorAll('.incCart').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const id = parseInt(btn.dataset.id);
-                        const item = cart.find(i => i.id === id);
-                        const product = products.find(p => p.id === id);
-                        if (item.quantity < product.stock) item.quantity++;
-                        updateCartUI();
-                    });
-                });
-
-                document.querySelectorAll('.decCart').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const id = parseInt(btn.dataset.id);
-                        const item = cart.find(i => i.id === id);
-                        if (item.quantity > 1) item.quantity--;
-                        else cart = cart.filter(i => i.id !== id);
-                        updateCartUI();
-                    });
-                });
-
-                document.querySelectorAll('.delCart').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const id = parseInt(btn.dataset.id);
-                        cart = cart.filter(i => i.id !== id);
-                        updateCartUI();
-                    });
-                });
-            }
-        }
-
-        const total = cart.reduce((acc, i) => acc + (i.price * i.quantity), 0);
-        cartTotal.innerText = `$${total.toLocaleString()}`;
-        checkoutBtn.disabled = cart.length === 0;
-    }
-
-    function generateOrderCode() {
-        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ123456789';
-        return Array(4).fill(0).map(() => chars[Math.floor(Math.random() * chars.length)]).join('');
-    }
-
-    // ==================== FUNCIÓN PARA GENERAR PDF DE MÉTRICAS ====================
-    function generarPDFMetricas() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
+    });
+    
+    document.getElementById('mobileSearch').addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        const resultsDiv = document.getElementById('mobilePredictiveResults');
         
-        // Título
-        doc.setFontSize(20);
-        doc.setTextColor(255, 107, 53);
-        doc.text('Ferretería El Constructor', 105, 20, { align: 'center' });
-        
-        doc.setFontSize(16);
-        doc.setTextColor(0, 0, 0);
-        doc.text('Reporte de Métricas', 105, 30, { align: 'center' });
-        
-        doc.setFontSize(10);
-        doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 20, 40);
-        doc.text(`Hora: ${new Date().toLocaleTimeString()}`, 20, 45);
-        
-        // Calcular métricas del mes actual
-        const inicioMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-        const finMes = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
-        
-        const pedidosMes = pedidos.filter(p => {
-            const fechaPedido = new Date(p.date);
-            return fechaPedido >= inicioMes && fechaPedido <= finMes && p.estado !== 'Entregado';
-        });
-        
-        const ventasMes = pedidosMes.reduce((acc, p) => acc + p.total, 0);
-        const totalPedidosMes = pedidosMes.length;
-        
-        // Producto más vendido
-        const productoMasVendido = [...products].sort((a,b) => b.sales - a.sales)[0];
-        
-        // Ventas por categoría
-        const ventasPorCategoria = {};
-        pedidosMes.forEach(pedido => {
-            pedido.items.forEach(item => {
-                if (!ventasPorCategoria[item.category]) {
-                    ventasPorCategoria[item.category] = 0;
-                }
-                ventasPorCategoria[item.category] += item.price * item.quantity;
-            });
-        });
-        
-        let yPos = 55;
-        
-        // Métricas principales
-        doc.setFontSize(12);
-        doc.setTextColor(44, 62, 80);
-        doc.text('📊 Métricas del Mes', 20, yPos);
-        yPos += 10;
-        
-        doc.setFontSize(10);
-        doc.setTextColor(0, 0, 0);
-        doc.text(`Ventas del mes: $${ventasMes.toLocaleString()}`, 25, yPos);
-        yPos += 7;
-        doc.text(`Pedidos del mes: ${totalPedidosMes}`, 25, yPos);
-        yPos += 7;
-        doc.text(`Productos totales: ${products.length}`, 25, yPos);
-        yPos += 7;
-        doc.text(`Productos con stock bajo: ${products.filter(p => p.stock <= 5).length}`, 25, yPos);
-        yPos += 15;
-        
-        // Producto estrella
-        if (productoMasVendido) {
-            doc.setFontSize(12);
-            doc.setTextColor(44, 62, 80);
-            doc.text('🏆 Producto Estrella', 20, yPos);
-            yPos += 10;
-            
-            doc.setFontSize(10);
-            doc.setTextColor(0, 0, 0);
-            doc.text(`Nombre: ${productoMasVendido.name}`, 25, yPos);
-            yPos += 7;
-            doc.text(`Unidades vendidas: ${productoMasVendido.sales || 0}`, 25, yPos);
-            yPos += 7;
-            doc.text(`Precio: $${productoMasVendido.price.toLocaleString()}`, 25, yPos);
-            yPos += 15;
+        if (term.length < 2) {
+            resultsDiv.classList.add('hidden');
+            return;
         }
         
-        // Ventas por categoría
-        doc.setFontSize(12);
-        doc.setTextColor(44, 62, 80);
-        doc.text('📈 Ventas por Categoría', 20, yPos);
-        yPos += 10;
-        
-        doc.setFontSize(10);
-        doc.setTextColor(0, 0, 0);
-        Object.entries(ventasPorCategoria).forEach(([cat, monto]) => {
-            if (yPos > 270) {
-                doc.addPage();
-                yPos = 20;
-            }
-            doc.text(`${cat}: $${monto.toLocaleString()}`, 25, yPos);
-            yPos += 7;
-        });
-        
-        // Guardar PDF
-        doc.save(`metricas_ferreteria_${new Date().toISOString().split('T')[0]}.pdf`);
-        showToast('PDF de métricas generado correctamente');
-    }
-
-    // ==================== FUNCIÓN PARA GENERAR PDF DE PEDIDOS DEL MES ====================
-    function generarPDFPedidosMes() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        
-        // Título
-        doc.setFontSize(20);
-        doc.setTextColor(255, 107, 53);
-        doc.text('Ferretería El Constructor', 105, 20, { align: 'center' });
-        
-        doc.setFontSize(16);
-        doc.setTextColor(0, 0, 0);
-        doc.text('Reporte de Pedidos del Mes', 105, 30, { align: 'center' });
-        
-        // Calcular mes actual
-        const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-        const mesActual = meses[new Date().getMonth()];
-        const añoActual = new Date().getFullYear();
-        
-        doc.setFontSize(12);
-        doc.text(`${mesActual} ${añoActual}`, 105, 40, { align: 'center' });
-        
-        doc.setFontSize(10);
-        doc.text(`Fecha de generación: ${new Date().toLocaleDateString()}`, 20, 50);
-        doc.text(`Hora: ${new Date().toLocaleTimeString()}`, 20, 55);
-        
-        // Filtrar pedidos del mes actual
-        const inicioMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-        const finMes = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
-        
-        const pedidosMes = pedidos.filter(p => {
-            const fechaPedido = new Date(p.date);
-            return fechaPedido >= inicioMes && fechaPedido <= finMes;
-        }).sort((a, b) => new Date(b.date) - new Date(a.date));
-        
-        const totalVentasMes = pedidosMes.reduce((acc, p) => acc + p.total, 0);
-        const totalPedidos = pedidosMes.length;
-        const pedidosEntregados = pedidosMes.filter(p => p.estado === 'Entregado').length;
-        const pedidosPendientes = pedidosMes.filter(p => p.estado !== 'Entregado').length;
-        
-        // Resumen
-        let yPos = 65;
-        doc.setFontSize(12);
-        doc.setTextColor(44, 62, 80);
-        doc.text('📊 Resumen del Mes', 20, yPos);
-        yPos += 10;
-        
-        doc.setFontSize(10);
-        doc.setTextColor(0, 0, 0);
-        doc.text(`Total de pedidos: ${totalPedidos}`, 25, yPos);
-        yPos += 7;
-        doc.text(`Pedidos entregados: ${pedidosEntregados}`, 25, yPos);
-        yPos += 7;
-        doc.text(`Pedidos pendientes: ${pedidosPendientes}`, 25, yPos);
-        yPos += 7;
-        doc.text(`Ventas totales: $${totalVentasMes.toLocaleString()}`, 25, yPos);
-        yPos += 15;
-        
-        // Listado de pedidos
-        doc.setFontSize(12);
-        doc.setTextColor(44, 62, 80);
-        doc.text('📋 Detalle de Pedidos', 20, yPos);
-        yPos += 10;
-        
-        pedidosMes.forEach((pedido, index) => {
-            // Verificar si necesitamos nueva página
-            if (yPos > 250) {
-                doc.addPage();
-                yPos = 20;
-            }
-            
-            doc.setFontSize(11);
-            doc.setTextColor(255, 107, 53);
-            doc.text(`Pedido #${index + 1} - Código: ${pedido.code}`, 20, yPos);
-            yPos += 7;
-            
-            doc.setFontSize(9);
-            doc.setTextColor(0, 0, 0);
-            doc.text(`Cliente: ${pedido.cliente}`, 25, yPos);
-            yPos += 5;
-            doc.text(`Fecha: ${new Date(pedido.date).toLocaleDateString()}`, 25, yPos);
-            yPos += 5;
-            doc.text(`Estado: ${pedido.estado}`, 25, yPos);
-            yPos += 5;
-            doc.text(`Método de entrega: ${pedido.delivery?.method || 'N/A'}`, 25, yPos);
-            yPos += 5;
-            
-            if (pedido.delivery?.date) {
-                doc.text(`Fecha de retiro: ${pedido.delivery.date} ${pedido.delivery.time || ''}`, 25, yPos);
-                yPos += 5;
-            }
-            
-            doc.text('Productos:', 25, yPos);
-            yPos += 5;
-            
-            pedido.items.forEach(item => {
-                if (yPos > 270) {
-                    doc.addPage();
-                    yPos = 20;
-                }
-                doc.text(`  • ${item.name} x${item.quantity} = $${(item.price * item.quantity).toLocaleString()}`, 30, yPos);
-                yPos += 5;
-            });
-            
-            doc.setFontSize(10);
-            doc.setTextColor(44, 62, 80);
-            doc.text(`Total del pedido: $${pedido.total.toLocaleString()}`, 25, yPos);
-            yPos += 5;
-            
-            // Línea separadora
-            doc.setDrawColor(200, 200, 200);
-            doc.line(20, yPos, 190, yPos);
-            yPos += 10;
-        });
-        
-        // Resumen final
-        if (yPos > 250) {
-            doc.addPage();
-            yPos = 20;
-        }
-        
-        doc.setFontSize(12);
-        doc.setTextColor(44, 62, 80);
-        doc.text('📈 Resumen Final', 20, yPos);
-        yPos += 10;
-        
-        doc.setFontSize(10);
-        doc.setTextColor(0, 0, 0);
-        doc.text(`Total de pedidos en el mes: ${totalPedidos}`, 25, yPos);
-        yPos += 7;
-        doc.text(`Total ventas del mes: $${totalVentasMes.toLocaleString()}`, 25, yPos);
-        
-        // Guardar PDF
-        doc.save(`pedidos_${mesActual}_${añoActual}.pdf`);
-        showToast('PDF de pedidos generado correctamente');
-    }
-
-    // ==================== ADMIN ====================
-    function renderAdminSection(section) {
-        activeAdminSection = section;
-        let html = '';
-
-        if (section === 'resumen') {
-            // Calcular métricas con pedidos no entregados
-            const pedidosActivos = pedidos.filter(p => p.estado !== 'Entregado');
-            const totalPedidosActivos = pedidosActivos.length;
-            const ventasHoy = pedidosActivos
-                .filter(p => new Date(p.date).toDateString() === new Date().toDateString())
-                .reduce((acc, p) => acc + p.total, 0);
-            const totalProductos = products.length;
-            const stockBajo = products.filter(p => p.stock <= 5).length;
-
-            html = `
-                <h2 class="text-xl sm:text-2xl font-bold mb-6">📊 Resumen del negocio</h2>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 mb-8">
-                    <div class="bg-blue-50 p-4 sm:p-6 rounded-2xl">
-                        <i class="fas fa-boxes text-2xl sm:text-3xl text-blue-600 mb-2"></i>
-                        <div class="text-xl sm:text-3xl font-black">${totalProductos}</div>
-                        <div class="text-xs sm:text-sm text-gray-600">Productos totales</div>
+        const results = products.filter(p => p.name.toLowerCase().includes(term)).slice(0, 5);
+        if (results.length) {
+            resultsDiv.classList.remove('hidden');
+            resultsDiv.innerHTML = results.map(p => {
+                const mainImage = p.images && p.images.length > 0 ? p.images[0] : p.image;
+                return `
+                    <div class="mobile-predictive-item" onclick="openProductDetailMobile(${p.id})">
+                        <img src="${mainImage}" alt="${p.name}">
+                        <span>${p.name}</span>
                     </div>
-                    <div class="bg-yellow-50 p-4 sm:p-6 rounded-2xl">
-                        <i class="fas fa-exclamation-triangle text-2xl sm:text-3xl text-yellow-600 mb-2"></i>
-                        <div class="text-xl sm:text-3xl font-black">${stockBajo}</div>
-                        <div class="text-xs sm:text-sm text-gray-600">Stock bajo</div>
-                    </div>
-                    <div class="bg-green-50 p-4 sm:p-6 rounded-2xl">
-                        <i class="fas fa-shopping-bag text-2xl sm:text-3xl text-green-600 mb-2"></i>
-                        <div class="text-xl sm:text-3xl font-black">${totalPedidosActivos}</div>
-                        <div class="text-xs sm:text-sm text-gray-600">Pedidos activos</div>
-                    </div>
-                    <div class="bg-purple-50 p-4 sm:p-6 rounded-2xl">
-                        <i class="fas fa-dollar-sign text-2xl sm:text-3xl text-purple-600 mb-2"></i>
-                        <div class="text-xl sm:text-3xl font-black">$${ventasHoy.toLocaleString()}</div>
-                        <div class="text-xs sm:text-sm text-gray-600">Ventas del día</div>
-                    </div>
-                </div>
-
-                <h3 class="text-lg sm:text-xl font-bold mb-4">⚠️ Alertas de stock bajo</h3>
-                <div class="bg-white rounded-2xl shadow overflow-x-auto">
-                    <table class="w-full min-w-[500px]">
-                        <thead class="bg-gray-50">
-                            <tr><th class="p-3 text-left text-xs sm:text-sm">Producto</th><th class="p-3 text-left text-xs sm:text-sm">Stock</th><th class="p-3 text-left text-xs sm:text-sm">Acción</th></tr>
-                        </thead>
-                        <tbody>
-                            ${products.filter(p => p.stock <= 5).map(p => `
-                                <tr class="border-t">
-                                    <td class="p-3 text-xs sm:text-sm">${p.name}</td>
-                                    <td class="p-3"><span class="stock-low text-xs sm:text-sm">${p.stock} unidades</span></td>
-                                    <td class="p-3"><button class="edit-stock-btn text-blue-600 text-xs sm:text-sm" data-id="${p.id}">Actualizar stock</button></td>
-                                </tr>
-                            `).join('')}
-                            ${products.filter(p => p.stock <= 5).length === 0 ? `
-                                <tr>
-                                    <td colspan="3" class="p-4 text-center text-gray-500">No hay productos con stock bajo</td>
-                                </tr>
-                            ` : ''}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        } else if (section === 'metricas') {
-            // Calcular métricas del mes actual
-            const inicioMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-            const finMes = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
-            
-            const pedidosMes = pedidos.filter(p => {
-                const fechaPedido = new Date(p.date);
-                return fechaPedido >= inicioMes && fechaPedido <= finMes && p.estado !== 'Entregado';
-            });
-            
-            const ventasMes = pedidosMes.reduce((acc, p) => acc + p.total, 0);
-            const totalPedidosMes = pedidosMes.length;
-            
-            const ventasPorCategoria = {};
-            pedidosMes.forEach(pedido => {
-                pedido.items.forEach(item => {
-                    if (!ventasPorCategoria[item.category]) {
-                        ventasPorCategoria[item.category] = 0;
-                    }
-                    ventasPorCategoria[item.category] += item.price * item.quantity;
-                });
-            });
-
-            const productoMasVendido = [...products].sort((a,b) => b.sales - a.sales)[0];
-            const categoriaMasVendida = Object.entries(ventasPorCategoria).sort((a,b) => b[1] - a[1])[0];
-            const ticketPromedio = totalPedidosMes > 0 ? ventasMes / totalPedidosMes : 0;
-
-            html = `
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                    <h2 class="text-xl sm:text-2xl font-bold">📈 Métricas del Mes</h2>
-                    <button id="generarPDFBtn" class="bg-[#FF6B35] text-white px-6 py-3 rounded-xl font-bold text-sm sm:text-base hover:bg-[#2C3E50] transition w-full sm:w-auto">
-                        <i class="fas fa-file-pdf mr-2"></i>Generar PDF
-                    </button>
-                </div>
-                
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6 mb-8">
-                    <div class="bg-green-50 p-4 sm:p-6 rounded-2xl">
-                        <i class="fas fa-chart-line text-2xl sm:text-3xl text-green-600 mb-2"></i>
-                        <div class="text-lg sm:text-3xl font-black">$${ventasMes.toLocaleString()}</div>
-                        <div class="text-xs sm:text-sm text-gray-600">Ventas del mes</div>
-                    </div>
-                    <div class="bg-blue-50 p-4 sm:p-6 rounded-2xl">
-                        <i class="fas fa-receipt text-2xl sm:text-3xl text-blue-600 mb-2"></i>
-                        <div class="text-lg sm:text-3xl font-black">${totalPedidosMes}</div>
-                        <div class="text-xs sm:text-sm text-gray-600">Pedidos del mes</div>
-                    </div>
-                    <div class="bg-purple-50 p-4 sm:p-6 rounded-2xl">
-                        <i class="fas fa-tag text-2xl sm:text-3xl text-purple-600 mb-2"></i>
-                        <div class="text-lg sm:text-3xl font-black">$${ticketPromedio.toFixed(0).toLocaleString()}</div>
-                        <div class="text-xs sm:text-sm text-gray-600">Ticket promedio</div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8">
-                    <div class="bg-white rounded-2xl shadow p-4 sm:p-6">
-                        <h3 class="text-base sm:text-lg font-bold mb-4">🏆 Producto estrella</h3>
-                        ${productoMasVendido ? `
-                            <div class="flex items-center gap-4">
-                                <img src="${productoMasVendido.image}" class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover">
-                                <div>
-                                    <div class="font-bold text-sm sm:text-base">${productoMasVendido.name}</div>
-                                    <div class="text-[#FF6B35] font-bold text-sm sm:text-base">$${productoMasVendido.price.toLocaleString()}</div>
-                                    <div class="text-xs sm:text-sm text-gray-600">${productoMasVendido.sales || 0} unidades vendidas</div>
-                                </div>
-                            </div>
-                        ` : '<p class="text-gray-500">Sin datos</p>'}
-                    </div>
-
-                    <div class="bg-white rounded-2xl shadow p-4 sm:p-6">
-                        <h3 class="text-base sm:text-lg font-bold mb-4">📊 Ventas por categoría</h3>
-                        ${Object.entries(ventasPorCategoria).map(([cat, monto]) => `
-                            <div class="flex justify-between mb-2 text-xs sm:text-sm">
-                                <span>${cat}</span>
-                                <span class="font-bold">$${monto.toLocaleString()}</span>
-                            </div>
-                        `).join('')}
-                        ${Object.keys(ventasPorCategoria).length === 0 ? `
-                            <p class="text-gray-500 text-center">No hay ventas en el mes</p>
-                        ` : ''}
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-2xl shadow p-4 sm:p-6">
-                    <h3 class="text-base sm:text-lg font-bold mb-4">📦 Resumen de inventario</h3>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        <div>
-                            <div class="text-2xl font-black text-blue-600">${products.length}</div>
-                            <div class="text-xs sm:text-sm text-gray-600">Productos totales</div>
-                        </div>
-                        <div>
-                            <div class="text-2xl font-black text-yellow-600">${products.filter(p => p.stock <= 5).length}</div>
-                            <div class="text-xs sm:text-sm text-gray-600">Stock bajo</div>
-                        </div>
-                        <div>
-                            <div class="text-2xl font-black text-green-600">${products.reduce((acc, p) => acc + (p.sales || 0), 0)}</div>
-                            <div class="text-xs sm:text-sm text-gray-600">Unidades vendidas</div>
-                        </div>
-                        <div>
-                            <div class="text-2xl font-black text-purple-600">${categoriaMasVendida ? categoriaMasVendida[0] : 'N/A'}</div>
-                            <div class="text-xs sm:text-sm text-gray-600">Categoría top</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        } else if (section === 'productos') {
-            html = `
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                    <h2 class="text-xl sm:text-2xl font-bold">📦 Gestión de Productos</h2>
-                    <button id="addProductBtn" class="bg-[#FF6B35] text-white px-6 py-3 rounded-xl font-bold text-sm sm:text-base w-full sm:w-auto">
-                        <i class="fas fa-plus mr-2"></i>Agregar Producto
-                    </button>
-                </div>
-                <div class="bg-white rounded-2xl shadow overflow-x-auto">
-                    <table class="w-full min-w-[800px]">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="p-3 text-left text-xs sm:text-sm">Imagen</th>
-                                <th class="p-3 text-left text-xs sm:text-sm">Producto</th>
-                                <th class="p-3 text-left text-xs sm:text-sm">Categoría</th>
-                                <th class="p-3 text-left text-xs sm:text-sm">Stock</th>
-                                <th class="p-3 text-left text-xs sm:text-sm">Precio</th>
-                                <th class="p-3 text-left text-xs sm:text-sm">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${products.map(p => {
-                                const mainImage = p.images && p.images.length > 0 ? p.images[0] : p.image;
-                                return `
-                                <tr class="border-t">
-                                    <td class="p-3"><img src="${mainImage}" class="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded-lg"></td>
-                                    <td class="p-3 font-bold text-xs sm:text-sm">${p.name}</td>
-                                    <td class="p-3 text-xs sm:text-sm">${p.category}</td>
-                                    <td class="p-3"><span class="${p.stock <= 5 ? 'stock-low' : ''} text-xs sm:text-sm">${p.stock}</span></td>
-                                    <td class="p-3 text-xs sm:text-sm">$${p.price.toLocaleString()}</td>
-                                    <td class="p-3">
-                                        <button class="edit-product text-blue-600 mr-2 text-xs sm:text-sm" data-id="${p.id}"><i class="fas fa-edit"></i></button>
-                                        <button class="delete-product text-red-600 text-xs sm:text-sm" data-id="${p.id}"><i class="fas fa-trash"></i></button>
-                                    </td>
-                                </tr>
-                            `}).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        } else if (section === 'pedidos') {
-            // Mostrar solo pedidos activos (no entregados) del día
-            const pedidosActivosHoy = pedidos.filter(p => 
-                p.estado !== 'Entregado' && 
-                new Date(p.date).toDateString() === new Date().toDateString()
-            );
-            
-            html = `
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                    <h2 class="text-xl sm:text-2xl font-bold">📋 Pedidos activos del día</h2>
-                    <button id="generarPDFPedidosBtn" class="bg-[#FF6B35] text-white px-6 py-3 rounded-xl font-bold text-sm sm:text-base hover:bg-[#2C3E50] transition w-full sm:w-auto">
-                        <i class="fas fa-file-pdf mr-2"></i>Reporte Mensual PDF
-                    </button>
-                </div>
-                <div class="bg-white rounded-2xl shadow overflow-x-auto">
-                    <table class="w-full min-w-[900px]">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="p-3 text-left text-xs sm:text-sm">Código</th>
-                                <th class="p-3 text-left text-xs sm:text-sm">Cliente</th>
-                                <th class="p-3 text-left text-xs sm:text-sm">Total</th>
-                                <th class="p-3 text-left text-xs sm:text-sm">Estado</th>
-                                <th class="p-3 text-left text-xs sm:text-sm">Entrega</th>
-                                <th class="p-3 text-left text-xs sm:text-sm">Fecha retiro</th>
-                                <th class="p-3 text-left text-xs sm:text-sm">Hora retiro</th>
-                                <th class="p-3 text-left text-xs sm:text-sm">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${pedidosActivosHoy.map(p => `
-                                <tr class="border-t">
-                                    <td class="p-3 font-mono font-bold text-xs sm:text-sm">${p.code}</td>
-                                    <td class="p-3 text-xs sm:text-sm">${p.cliente}</td>
-                                    <td class="p-3 text-xs sm:text-sm">$${p.total.toLocaleString()}</td>
-                                    <td class="p-3">
-                                        <select class="estado-select border rounded-lg px-2 py-1 text-xs sm:text-sm" data-code="${p.code}">
-                                            <option ${p.estado === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
-                                            <option ${p.estado === 'En preparación' ? 'selected' : ''}>En preparación</option>
-                                            <option ${p.estado === 'Entregado' ? 'selected' : ''}>Entregado</option>
-                                        </select>
-                                    </td>
-                                    <td class="p-3 text-xs sm:text-sm">${p.delivery?.method || 'N/A'}</td>
-                                    <td class="p-3 text-xs sm:text-sm">${p.delivery?.date || '-'}</td>
-                                    <td class="p-3 text-xs sm:text-sm">${p.delivery?.time || '-'}</td>
-                                    <td class="p-3">
-                                        <button class="complete-order bg-green-500 text-white px-3 py-1 rounded-lg text-xs sm:text-sm" data-code="${p.code}">
-                                            <i class="fas fa-check"></i> Completar
-                                        </button>
-                                    </td>
-                                </tr>
-                            `).join('')}
-                            ${pedidosActivosHoy.length === 0 ? `
-                                <tr>
-                                    <td colspan="8" class="p-8 text-center text-gray-500">
-                                        No hay pedidos activos por hoy
-                                    </td>
-                                </tr>
-                            ` : ''}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        }
-
-        adminContent.innerHTML = html;
-
-        if (section === 'productos') {
-            document.getElementById('addProductBtn').addEventListener('click', () => openProductModal());
-            document.querySelectorAll('.edit-product').forEach(btn => {
-                btn.addEventListener('click', () => openProductModal(parseInt(btn.dataset.id)));
-            });
-            document.querySelectorAll('.delete-product').forEach(btn => {
-                btn.addEventListener('click', () => deleteProduct(parseInt(btn.dataset.id)));
-            });
-        }
-
-        if (section === 'pedidos') {
-            document.getElementById('generarPDFPedidosBtn')?.addEventListener('click', generarPDFPedidosMes);
-            
-            document.querySelectorAll('.estado-select').forEach(select => {
-                select.addEventListener('change', (e) => {
-                    const code = select.dataset.code;
-                    const pedido = pedidos.find(p => p.code === code);
-                    if (pedido) {
-                        pedido.estado = select.value;
-                        saveToLocalStorage();
-                        showToast('Estado actualizado');
-                    }
-                });
-            });
-
-            document.querySelectorAll('.complete-order').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const code = btn.dataset.code;
-                    const pedido = pedidos.find(p => p.code === code);
-                    if (pedido) {
-                        pedido.estado = 'Entregado';
-                        saveToLocalStorage();
-                        renderAdminSection('pedidos');
-                        showToast('Pedido completado y archivado');
-                    }
-                });
-            });
-        }
-
-        if (section === 'metricas') {
-            document.getElementById('generarPDFBtn')?.addEventListener('click', generarPDFMetricas);
-        }
-    }
-
-    function openProductModal(id = null) {
-        currentProductId = id;
-        document.getElementById('modalTitle').innerText = id ? 'Editar Producto' : 'Agregar Producto';
-        
-        const catSelect = document.getElementById('productCategory');
-        catSelect.innerHTML = CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('');
-
-        if (id) {
-            const product = products.find(p => p.id === id);
-            document.getElementById('productId').value = product.id;
-            document.getElementById('productName').value = product.name;
-            document.getElementById('productDescription').value = product.description || '';
-            document.getElementById('productCategory').value = product.category;
-            document.getElementById('productPrice').value = product.price;
-            document.getElementById('productStock').value = product.stock;
-            
-            currentImages = product.images || [product.image];
-            renderMultiImageGallery(currentImages);
+                `;
+            }).join('');
         } else {
-            document.getElementById('productId').value = '';
-            document.getElementById('productForm').reset();
-            document.getElementById('productDescription').value = '';
-            currentImages = [];
-            renderMultiImageGallery([]);
+            resultsDiv.classList.add('hidden');
         }
-
-        document.getElementById('productModal').classList.remove('hidden');
-    }
-
-    function renderMultiImageGallery(images) {
-        const container = document.getElementById('multiImageContainer');
-        let html = '';
-        
-        images.forEach((img, index) => {
-            html += `
-                <div class="multi-image-item">
-                    <img src="${img}">
-                    <div class="remove-image" onclick="removeImage(${index})">
-                        <i class="fas fa-times"></i>
-                    </div>
-                </div>
-            `;
+    });
+    
+    // Filtros rápidos
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            
+            const filter = chip.dataset.filter;
+            if (filter === 'todos') {
+                renderProductsMobile();
+            } else if (filter === 'precio') {
+                const sorted = [...products].sort((a,b) => a.price - b.price);
+                renderProductsMobile(sorted);
+            } else if (filter === 'ofertas') {
+                const ofertas = products.filter(p => p.stock <= 5 && p.stock > 0);
+                renderProductsMobile(ofertas);
+            } else if (filter === 'mas-vendidos') {
+                const destacados = [...products].sort((a,b) => b.sales - a.sales);
+                renderProductsMobile(destacados);
+            }
         });
-        
-        html += `
-            <div class="add-more-images" onclick="document.getElementById('multiImageUpload').click()">
-                <i class="fas fa-plus text-2xl text-gray-400"></i>
-                <span class="text-xs text-gray-500 mt-1">Agregar</span>
+    });
+    
+    window.addEventListener('offline', () => {
+        document.getElementById('offlineBanner').classList.remove('hidden');
+    });
+    
+    window.addEventListener('online', () => {
+        document.getElementById('offlineBanner').classList.add('hidden');
+    });
+}
+
+function renderAdminMobile() {
+    const content = document.getElementById('adminContentMobile');
+    content.innerHTML = `
+        <div style="padding: 16px;">
+            <h2 style="font-size: 20px; font-weight: 900; margin-bottom: 16px;">Panel Admin</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px;">
+                <div style="background: #f8f9fa; padding: 16px; border-radius: 12px;">
+                    <i class="fas fa-boxes" style="font-size: 24px; color: #3b82f6;"></i>
+                    <div style="font-size: 24px; font-weight: 900;">${products.length}</div>
+                    <div style="font-size: 12px; color: #6c757d;">Productos</div>
+                </div>
+                <div style="background: #f8f9fa; padding: 16px; border-radius: 12px;">
+                    <i class="fas fa-shopping-bag" style="font-size: 24px; color: #10b981;"></i>
+                    <div style="font-size: 24px; font-weight: 900;">${pedidos.length}</div>
+                    <div style="font-size: 12px; color: #6c757d;">Pedidos</div>
+                </div>
             </div>
-        `;
-        
-        container.innerHTML = html;
-    }
-
-    window.removeImage = function(index) {
-        currentImages.splice(index, 1);
-        renderMultiImageGallery(currentImages);
-    };
-
-    async function deleteProduct(id) {
-        const product = products.find(p => p.id === id);
-        if (!product) return;
-        
-        if (confirm('¿Eliminar producto?')) {
-            try {
-                const { error: dbError } = await supabase
-                    .from('productos')
-                    .delete()
-                    .eq('id', id);
-                
-                if (dbError) throw dbError;
-                
-                await cargarProductosDB();
-                showToast('Producto eliminado');
-            } catch (error) {
-                console.error('Error eliminando producto:', error);
-                showToast('Error al eliminar', 'error');
-            }
-        }
-    }
-
-    // ==================== FUNCIONES PARA MÓVIL ====================
-    function setupMobileFeatures() {
-        // Menú hamburguesa para admin
-        if (adminMenuToggle) {
-            adminMenuToggle.addEventListener('click', () => {
-                adminSidebar.classList.toggle('open');
-            });
-        }
-
-        // Cerrar sidebar al hacer clic fuera
-        document.addEventListener('click', (e) => {
-            if (window.innerWidth <= 640) {
-                if (!adminSidebar.contains(e.target) && !adminMenuToggle?.contains(e.target)) {
-                    adminSidebar.classList.remove('open');
-                }
-            }
-        });
-
-        // Búsqueda móvil
-        if (mobileSearch) {
-            mobileSearch.addEventListener('input', (e) => {
-                const term = e.target.value.toLowerCase();
-                if (term.length < 2) {
-                    predictiveResults.classList.add('hidden');
-                    return;
-                }
-                const results = products.filter(p => p.name.toLowerCase().includes(term)).slice(0, 5);
-                if (results.length) {
-                    predictiveResults.classList.remove('hidden');
-                    predictiveResults.innerHTML = results.map(p => {
-                        const mainImage = p.images && p.images.length > 0 ? p.images[0] : p.image;
-                        return `
-                        <div class="p-2 hover:bg-gray-100 cursor-pointer flex items-center gap-2" onclick="openProductDetail(${p.id})">
-                            <img src="${mainImage}" class="w-6 h-6 sm:w-8 sm:h-8 rounded object-cover">
-                            <span class="text-xs sm:text-sm">${p.name}</span>
-                        </div>
-                    `}).join('');
-                } else {
-                    predictiveResults.classList.add('hidden');
-                }
-            });
-        }
-
-        // Prevenir zoom en inputs en iOS
-        document.querySelectorAll('input, select, textarea').forEach(el => {
-            el.addEventListener('focus', () => {
-                if (window.innerWidth <= 640) {
-                    document.body.style.fontSize = '16px';
-                }
-            });
-        });
-    }
-
-    // ==================== INICIALIZACIÓN ====================
-    function init() {
-        renderCategories();
-        renderProducts();
-        renderDestacados();
-        cargarProductosDB();
-        setupMobileFeatures();
-
-        const catFilter = document.getElementById('categoryFilter');
-        CATEGORIES.forEach(c => catFilter.innerHTML += `<option value="${c}">${c</option>`);
-
-        document.getElementById('applyFilters').addEventListener('click', filterProducts);
-
-        document.getElementById('cartToggle').addEventListener('click', () => {
-            cartSidebar.classList.remove('translate-x-full');
-            document.getElementById('cartOverlay').classList.remove('hidden');
-        });
-
-        document.getElementById('closeCart').addEventListener('click', () => {
-            cartSidebar.classList.add('translate-x-full');
-            document.getElementById('cartOverlay').classList.add('hidden');
-        });
-
-        document.getElementById('cartOverlay').addEventListener('click', () => {
-            cartSidebar.classList.add('translate-x-full');
-            document.getElementById('cartOverlay').classList.add('hidden');
-        });
-
-        document.getElementById('adminLockBtn').addEventListener('click', () => {
-            document.getElementById('adminLoginModal').classList.remove('hidden');
-        });
-
-        document.getElementById('closeAdminLogin').addEventListener('click', () => {
-            document.getElementById('adminLoginModal').classList.add('hidden');
-        });
-
-        document.getElementById('loginAdminBtn').addEventListener('click', () => {
-            const user = document.getElementById('adminUser').value;
-            const pass = document.getElementById('adminPass').value;
-            if (user === 'admin' && pass === 'admin123') {
-                adminSession = true;
-                localStorage.setItem('ferreteria_admin_session', 'true');
-                document.getElementById('adminLoginModal').classList.add('hidden');
-                clienteView.classList.add('hidden');
-                adminView.classList.remove('hidden');
-                adminSidebar.classList.remove('hidden');
-                if (window.innerWidth <= 640) {
-                    adminMenuToggle.classList.remove('hidden');
-                }
-                renderAdminSection('resumen');
-                showToast('Bienvenido admin');
-            } else {
-                showToast('Credenciales incorrectas', 'error');
-            }
-        });
-
-        document.querySelectorAll('[data-section]').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                document.querySelectorAll('[data-section]').forEach(l => l.classList.remove('active'));
-                link.classList.add('active');
-                renderAdminSection(link.dataset.section);
-                if (window.innerWidth <= 640) {
-                    adminSidebar.classList.remove('open');
-                }
-            });
-        });
-
-        document.getElementById('logoutAdmin').addEventListener('click', (e) => {
-            e.preventDefault();
-            adminSession = false;
-            localStorage.setItem('ferreteria_admin_session', 'false');
-            clienteView.classList.remove('hidden');
-            adminView.classList.add('hidden');
-            adminSidebar.classList.add('hidden');
-            if (window.innerWidth <= 640) {
-                adminMenuToggle.classList.add('hidden');
-            }
-            showToast('Sesión cerrada');
-        });
-
-        document.getElementById('closeProductModal').addEventListener('click', () => {
-            document.getElementById('productModal').classList.add('hidden');
-        });
-
-        document.getElementById('productForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
             
-            const id = document.getElementById('productId').value;
-            const fileInput = document.getElementById('multiImageUpload');
-            const files = fileInput.files.length > 0 ? Array.from(fileInput.files) : [];
-            
-            const productData = {
-                id: id ? parseInt(id) : undefined,
-                name: document.getElementById('productName').value,
-                description: document.getElementById('productDescription').value,
-                category: document.getElementById('productCategory').value,
-                price: parseFloat(document.getElementById('productPrice').value),
-                stock: parseInt(document.getElementById('productStock').value),
-                images: currentImages,
-                sales: id ? products.find(p => p.id === parseInt(id))?.sales || 0 : 0
-            };
-            
-            await guardarProductoDB(productData, files);
-            document.getElementById('productModal').classList.add('hidden');
-        });
+            <button onclick="logoutAdminMobile()" style="width: 100%; padding: 14px; background: #ef4444; color: white; border: none; border-radius: 12px; font-weight: 600;">
+                <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+            </button>
+        </div>
+    `;
+}
 
-        document.getElementById('multiImageUpload').addEventListener('change', (e) => {
-            const files = Array.from(e.target.files);
-            files.forEach(file => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    currentImages.push(e.target.result);
-                    renderMultiImageGallery(currentImages);
-                };
-                reader.readAsDataURL(file);
-            });
-        });
+window.logoutAdminMobile = function() {
+    adminSession = false;
+    localStorage.setItem('ferreteria_admin_session', 'false');
+    document.getElementById('clienteViewMobile').classList.remove('hidden');
+    document.getElementById('adminViewMobile').classList.add('hidden');
+    showToastMobile('Sesión cerrada');
+};
 
-        globalSearch.addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            if (term.length < 2) {
-                predictiveResults.classList.add('hidden');
-                return;
-            }
-            const results = products.filter(p => p.name.toLowerCase().includes(term)).slice(0, 5);
-            if (results.length) {
-                predictiveResults.classList.remove('hidden');
-                predictiveResults.innerHTML = results.map(p => {
-                    const mainImage = p.images && p.images.length > 0 ? p.images[0] : p.image;
-                    return `
-                    <div class="p-2 hover:bg-gray-100 cursor-pointer flex items-center gap-2" onclick="openProductDetail(${p.id})">
-                        <img src="${mainImage}" class="w-6 h-6 sm:w-8 sm:h-8 rounded object-cover">
-                        <span class="text-xs sm:text-sm">${p.name}</span>
-                    </div>
-                `}).join('');
-            } else {
-                predictiveResults.classList.add('hidden');
-            }
-        });
-
-        if (darkMode) {
-            appWrapper.classList.add('dark-mode');
-            darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-        }
-
-        darkModeToggle.addEventListener('click', () => {
-            darkMode = !darkMode;
-            appWrapper.classList.toggle('dark-mode');
-            localStorage.setItem('darkMode', darkMode);
-            darkModeToggle.innerHTML = darkMode ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
-        });
-
-        document.getElementById('closeSuccessModal').addEventListener('click', () => {
-            document.getElementById('successModal').classList.add('hidden');
-        });
-
-        document.getElementById('whatsappShare').addEventListener('click', () => {
-            const code = document.getElementById('orderCode').innerText;
-            const summary = document.getElementById('orderSummary').innerText;
-            const msg = `🎉 *Pedido confirmado en Ferretería El Constructor* 🎉\n\nCódigo: ${code}\n\n${summary}`;
-            window.open(`https://wa.me/5491159602127?text=${encodeURIComponent(msg)}`, '_blank');
-        });
-
-        window.addEventListener('offline', () => {
-            document.getElementById('offlineBanner').classList.remove('hidden');
-        });
-        window.addEventListener('online', () => {
-            document.getElementById('offlineBanner').classList.add('hidden');
-        });
-
-        updateCartUI();
-    }
-
-    init();
-})();
+// Iniciar
+document.addEventListener('DOMContentLoaded', initMobile);
 </script>
 </body>
 </html>
